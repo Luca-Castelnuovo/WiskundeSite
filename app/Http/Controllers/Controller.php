@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Routing\Controller as BaseController;
 
-class Controller extends BaseController {
+class Controller extends BaseController
+{
     /**
      * Return generic json response with the given data.
      *
      * @param $data
-     * @param int $statusCode
+     * @param int   $statusCode
      * @param array $headers
      *
      * @return JsonResponse
@@ -19,6 +20,7 @@ class Controller extends BaseController {
     {
         return response($data, $statusCode, $headers);
     }
+
     /**
      * Respond with success.
      *

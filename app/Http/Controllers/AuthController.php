@@ -2,31 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Mail\RegisterConfirmationMail;
-use App\Mail\RequestResetPasswordMail;
 use App\Helpers\AuthHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\HttpStatusCodes;
+use App\Mail\RegisterConfirmationMail;
+use App\Mail\RequestResetPasswordMail;
+use App\Models\User;
 use App\Validators\ValidatesAuthRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
-class AuthController extends Controller {
+class AuthController extends Controller
+{
     use ValidatesAuthRequests;
 
     /**
-     * Login user and return tokens
+     * Login user and return tokens.
      *
      * @param Request $request
      *
-     * @return mixed
-     *
      * @throws
+     *
+     * @return mixed
      */
     public function login(Request $request)
     {
@@ -38,61 +39,57 @@ class AuthController extends Controller {
             return $this->respond([
                 'errors' => [
                     'email or password' => ['is invalid'],
-                ]
+                ],
             ], HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED);
         }
 
-        if ($user->verify_email_token !== null) {
+        if (null !== $user->verify_email_token) {
             return $this->respond([
                 'errors' => [
                     'account' => ['not active'],
-                ]
+                ],
             ], HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED);
         }
 
         return response()->json(
-            AuthHelper::login(
-                $user->id,
-                $request->ip(),
-                $request->header('user-agent')
-            ),
+            AuthHelper::login($user->id),
             HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Refreshes the access_token
+     * Refreshes the access_token.
      *
      * @param Request $request
      *
-     * @return JsonResponse
-     *
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function refresh(Request $request) {
+    public function refresh(Request $request)
+    {
         $this->validateRefresh($request);
 
         return response()->json(
             AuthHelper::refresh(
                 $request->get('session_uuid'),
-                $request->get('refresh_token'),
-                $request->ip(),
-                $request->header('user-agent')
+                $request->get('refresh_token')
             ),
             HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Revoke the refresh_token
+     * Revoke the refresh_token.
      *
      * @param Request $request
      *
-     * @return JsonResponse
-     *
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         if (!AuthHelper::logout($request->user_id, $request->session_uuid)) {
             throw new ModelNotFoundException();
         }
@@ -104,34 +101,38 @@ class AuthController extends Controller {
     }
 
     /**
-     * Register account
+     * Register account.
      *
      * @param Request $request
      *
-     * @return JsonResponse
-     *
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $this->validateRegister($request);
 
         if (!CaptchaHelper::validate($request->get('captcha_response'))) {
             return response()->json(
                 [
-                    'error' => 'invalid captcha'
+                    'error' => 'invalid captcha',
                 ],
                 HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
             );
         }
 
+        $verify_mail_token = Str::random(config('tokens.verify_mail_token.length'));
+        $verify_mail_token_hash = Hash::make($verify_mail_token);
+
         $user = User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
-            'verify_email_token' => Str::random(config('tokens.verify_mail_token.length'))
+            'verify_email_token' => $verify_mail_token_hash,
         ]);
-      
-        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user));
+
+        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token));
 
         return response()->json(
             $user,
@@ -140,20 +141,22 @@ class AuthController extends Controller {
     }
 
     /**
-     * Request an reset password email
+     * Request an reset password email.
      *
      * @param Request $request
      *
-     * @return JsonResponse
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function requestResetPassword(Request $request) {
+    public function requestResetPassword(Request $request)
+    {
         $this->validateRequestPasswordReset($request);
 
         if (!CaptchaHelper::validate($request->get('captcha_response'))) {
             return response()->json(
                 [
-                    'error' => 'invalid captcha'
+                    'error' => 'invalid captcha',
                 ],
                 HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
             );
@@ -164,11 +167,13 @@ class AuthController extends Controller {
             $request->get('email')
         )->get();
 
-        $user->reset_password_token = Str::random(config('tokens.reset_password_token.length'));
+        $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
+        $reset_password_token_hash = Hash::make($reset_password_token);
+        $user->reset_password_token = $reset_password_token_hash;
 
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user));
+        Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user, $reset_password_token));
 
         return response()->json(
             null,
@@ -177,23 +182,36 @@ class AuthController extends Controller {
     }
 
     /**
-     * Confirm a password reset
+     * Confirm a password reset.
      *
      * @param Request $request
      *
-     * @return JsonResponse
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function resetPassword(Request $request) {
+    public function resetPassword(Request $request)
+    {
         $this->validatePasswordReset($request);
+
+        $reset_password_token_hash = Hash::make($request->get('reset_password_token'));
 
         $user = User::where(
             'reset_password_token',
-            $request->get('reset_password_token')
+            $reset_password_token_hash
         )->first();
 
+        if (null === $user) {
+            return response()->json(
+                [
+                    'error' => 'invalid reset token',
+                ],
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
+        }
+
         $user->password = Hash::make($request->get('password'));
-        
+
         $user->reset_password_token = null;
 
         $user->save();
@@ -204,25 +222,39 @@ class AuthController extends Controller {
         );
     }
 
-
     /**
-     * Verify user email and activate account
+     * Verify user email and activate account.
      *
      * @param Request $request
      *
-     * @return JsonResponse
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function verifyEmail(Request $request) {
+    public function verifyEmail(Request $request)
+    {
         $this->validateVerifyEmailToken($request);
+
+        $verify_email_token_hash = Hash::make($request->get('verify_email_token'));
 
         $user = User::where(
             'verify_email_token',
-            $request->get('verify_email_token')
+            $verify_email_token_hash
         )->first();
-        
+
+        dd($user, $verify_email_token_hash);
+
+        if (null === $user) {
+            return response()->json(
+                [
+                    'error' => 'invalid verification token',
+                ],
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
+        }
+
         $user->verify_email_token = null;
-        
+
         $user->save();
 
         return response()->json(

@@ -5,34 +5,34 @@ namespace App\Helpers;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
-class CaptchaHelper {
-
+class CaptchaHelper
+{
     /**
-     * Validates the captcha response
+     * Validates the captcha response.
      *
      * @param $captcha_response
      *
-     * @return bool
-     *
      * @throws GuzzleException
+     *
+     * @return bool
      */
-   public static function validate($captcha_response) {
-
-      if (config('app.debug')) {
+    public static function validate($captcha_response)
+    {
+        if (config('app.debug')) {
             return true;
-      }
+        }
 
-       $guzzle_client = new Client();
+        $guzzle_client = new Client();
 
-       $response = $guzzle_client->request('POST', config('captcha.endpoint'), [
-           'form_params' => [
-               'secret' => config('captcha.private_key'),
-               'response' => $captcha_response
-           ]
-       ]);
+        $response = $guzzle_client->request('POST', config('captcha.endpoint'), [
+            'form_params' => [
+                'secret' => config('captcha.private_key'),
+                'response' => $captcha_response,
+            ],
+        ]);
 
-       $response = json_decode($response->getBody());
+        $response = json_decode($response->getBody());
 
-       return $response->success;
-   }
+        return $response->success;
+    }
 }

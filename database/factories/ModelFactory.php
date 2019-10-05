@@ -24,16 +24,12 @@ $factory->define(App\Models\User::class, function ($faker) {
     ];
 });
 
-/**
- * Factory definition for model App\Models\Product.
- */
+// Factory definition for model App\Models\Product.
 $factory->define(App\Models\Product::class, function ($faker) {
     return [
         'name' => $faker->unique()->text(16),
         'img_url' => $faker->imageUrl(),
         'price' => $faker->randomFloat(2, 0.10, 3.50),
-        'is_healthy' => $faker->boolean(),
-        'tags' => [$faker->numberBetween(0, 6), $faker->numberBetween(0, 6)],
-        'recommended_addons' => [$faker->numberBetween(0,25), $faker->numberBetween(0,25)],
+        'subject' => 'Wiskunde B',
     ];
 });

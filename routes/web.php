@@ -12,14 +12,11 @@
 */
 
 /**
- * General
+ * General.
  */
 $router->get('/', 'GeneralController@index');
 
-
-/**
- * Auth
- */
+// Auth
 $router->post('auth/register', 'AuthController@register');
 $router->post('auth/verify', 'AuthController@verifyEmail');
 $router->post('auth/login', 'AuthController@login');
@@ -27,43 +24,32 @@ $router->post('auth/refresh', 'AuthController@refresh');
 $router->post('auth/reset/request', 'AuthController@requestResetPassword');
 $router->post('auth/reset', 'AuthController@resetPassword');
 
-
 $router->group(['middleware' => 'auth'], function () use ($router) {
-    /**
-     * Auth
-     */
+    // Auth
     $router->post('auth/logout', 'AuthController@logout');
 
-    /**
-     * Account
-     */
+    // Account
     $router->get('account', 'AccountsController@index');
     $router->put('account', 'AccountsController@update');
     $router->delete('account', 'AccountsController@delete');
     $router->get('account/sessions', 'AccountsController@showSessions');
     $router->delete('account/sessions', 'AccountsController@revoke');
 
-    /**
-     * Products
-     */
-    $router->get('products', 'ProductsController@index');
-    $router->get('products/{id:[0-9,]+}', 'ProductsController@show');
-    $router->post('products', 'ProductsController@create');
-    $router->put('products/{id:[0-9]+}', 'ProductsController@update');
-    $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
+    // Products
+    // $router->get('products', 'ProductsController@index');
+    // $router->get('products/{id:[0-9,]+}', 'ProductsController@show');
+    // $router->post('products', 'ProductsController@create');
+    // $router->put('products/{id:[0-9]+}', 'ProductsController@update');
+    // $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
 
-    /**
-     * Tags
-     */
-    $router->get('tags', 'TagsController@index');
-    $router->get('tags/{id:[0-9,]+}', 'TagsController@show');
-    $router->get('tags/{id:[0-9,]+}/products', 'TagsController@showProducts');
-    $router->post('tags', 'TagsController@create');
-    $router->put('tags/{id:[0-9]+}', 'TagsController@update');
-    $router->delete('tags/{id:[0-9]+}', 'TagsController@delete');
+    // Subjects
+    // $router->get('subjects', 'SubjectsController@index');
+    // $router->get('subjects/{id:[0-9,]+}', 'SubjectsController@show');
+    // $router->get('subjects/{id:[0-9,]+}/products', 'SubjectsController@showProducts');
+    // $router->post('subjects', 'SubjectsController@create');
+    // $router->put('subjects/{id:[0-9]+}', 'SubjectsController@update');
+    // $router->delete('subjects/{id:[0-9]+}', 'SubjectsController@delete');
 
-    /**
-     * Order
-     */
+    // Order
     $router->post('order', 'OrderController@new');
 });

@@ -2,117 +2,122 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Tag;
 use App\Helpers\HttpStatusCodes;
-use App\Validators\ValidatesTagsRequests;
-use Illuminate\Http\Request;
+use App\Models\Product;
+use App\Models\Subject;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
-class TagsController extends Controller {
-    use ValidatesTagsRequests;
+class SubjectsController extends Controller
+{
+    use ValidatesSubjectsRequests;
 
     /**
-     * Show all tags
+     * Show all subjects.
      *
      * @return JsonResponse
      */
     public function index()
     {
         return response()->json(
-            Tag::all(),
+            Subject::all(),
             HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * View tag (multiple can be requested with comma's)
+     * View subject (multiple can be requested with comma's).
      *
      * @param string
+     * @param mixed $id
      *
      * @return JsonResponse
      */
-    public function show($id) {
+    public function show($id)
+    {
         $ids = array_map('intval', explode(',', $id));
 
         return response()->json(
-            Tag::findOrFail($ids),
+            Subject::findOrFail($ids),
             HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * View products with the requested tag
+     * View products with the requested subject.
      *
      * @param string
+     * @param mixed $id
      *
      * @return JsonResponse
      */
-    public function showProducts($id) {
-        $ids = array_map('intval', explode(',', $id));
-
+    public function showProducts($id)
+    {
         return response()->json(
-            Product::whereJsonContains('tags', $ids)->get(),
+            Product::where('subject', $id)->get(),
             HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Create tag
+     * Create subject.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function create(Request $request) {
+    public function create(Request $request)
+    {
         $this->validateCreate($request);
 
-        $tag = Tag::create([
-            'name' => $request->get('name', $tag->name),
-            'color' => $request->get('color', $tag->color)
+        $subject = Subject::create([
+            'name' => $request->get('name', $request->get('name')),
+            'color' => $request->get('color', $request->get('color')),
         ]);
 
         return response()->json(
-            $tag,
+            $subject,
             HttpStatusCodes::SUCCESS_CREATED
         );
     }
 
     /**
-     * Update tag
+     * Update subject.
      *
      * @param Request $request
      * @param $id
      *
      * @return JsonResponse
      */
-    public function update(Request $request, $id) {
-        $tag = Tag::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $subject = Subject::findOrFail($id);
 
-        $this->validateUpdate($request, $tag);
+        $this->validateUpdate($request, $subject);
 
-        $tag->update([
-            'name' => $request->get('name', $tag->name),
-            'color' => $request->get('color', $tag->color)
+        $subject->update([
+            'name' => $request->get('name', $subject->name),
+            'color' => $request->get('color', $subject->color),
         ]);
 
-        $tag->save();
+        $subject->save();
 
         return response()->json(
-            $tag,
+            $subject,
             HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Delete tag
+     * Delete subject.
      *
      * @param $id
      *
      * @return JsonResponse
      */
-    public function delete($id) {
-        Tag::findOrFail($id)->delete();
+    public function delete($id)
+    {
+        Subject::findOrFail($id)->delete();
 
         return response()->json(
             null,

@@ -8,18 +8,21 @@ use Illuminate\Mail\Mailable;
 
 class RegisterConfirmationMail extends Mailable
 {
-	public $user;
+    public $user;
+	public $verify_mail_token;
 
     /**
      * Create a new message instance.
      *
-     * @param User
+     * @param User $user
+     * @param string $verify_mail_token
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct($user, $verify_mail_token)
     {
         $this->user = $user;
+        $this->verify_mail_token = $verify_mail_token;
     }
 
     /**
@@ -32,7 +35,7 @@ class RegisterConfirmationMail extends Mailable
         return $this->markdown(
             'mail.RegisterConfirmation',
             [
-                'verifyEmailUrl' => config('app.domain') . '/auth/verify/' . $this->user->verify_email_token
+                'verifyEmailUrl' => config('app.domain') . '/auth/verify/' . $this->verify_mail_token
             ]
         );
     }

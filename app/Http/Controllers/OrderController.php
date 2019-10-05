@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Helpers\HttpStatusCodes;
 use App\Validators\ValidatesOrderRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Mollie\Laravel\Facades\Mollie;
 
-
-class OrderController extends Controller {
+class OrderController extends Controller
+{
     use ValidatesOrderRequests;
 
     /**
-     * Create a new order
+     * Create a new order.
      *
      * @param Request $request
      *
@@ -20,13 +21,25 @@ class OrderController extends Controller {
      */
     public function new(Request $request)
     {
-        $this->validateCreate($request);
+        // $this->validateCreate($request);
+
+        $payment = Mollie::api()->payments()->create([
+            'amount' => [
+                'currency' => 'EUR',
+                'value' => '10.00',
+            ],
+            'description' => 'My first API payment',
+            'redirectUrl' => 'https://google.com',
+            'webhookUrl' => 'https://enh6gp136zyzu.x.pipedream.net',
+        ]);
+
+        $payment = Mollie::api()->payments()->get($payment->id);
 
         return response()->json(
             [
-                'error' => 'function not implemented'
+                'link' => $payment->getCheckoutUrl(),
             ],
-            HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 }

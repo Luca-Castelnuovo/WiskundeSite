@@ -2,29 +2,31 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
-use App\Models\User;
 use App\Helpers\AuthHelper;
+use App\Models\User;
+use Closure;
 use Illuminate\Http\Request;
 
-class JWTMiddleware {
+class JWTMiddleware
+{
     /**
-     * Validate JWT token
+     * Validate JWT token.
      *
-     * @param Request   $request
-     * @param Closure   $next
+     * @param Request $request
+     * @param Closure $next
      *
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
         $access_token = AuthHelper::parseAuthHeader($request->headers->get('Authorization'));
-        $credentials = AuthHelper::validateAccessToken($access_token, $request->ip());
+        $credentials = AuthHelper::validateAccessToken($access_token);
 
         // Returns an error message for an invalid token
         if (isset($credentials->error)) {
             $http_code = $credentials->http;
             unset($credentials->http);
+
             return response()->json($credentials, $http_code);
         }
 

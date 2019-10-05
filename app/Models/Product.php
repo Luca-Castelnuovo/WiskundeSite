@@ -15,9 +15,7 @@ class Product extends Model
         'name',
         'img_url',
         'price',
-        'is_healthy',
-        'tags',
-        'recommended_addons'
+        'subject',
     ];
 
     /**
@@ -27,7 +25,7 @@ class Product extends Model
      */
     protected $dates = [
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     /**
@@ -41,19 +39,11 @@ class Product extends Model
     ];
 
     /**
-     * Convert JSON to array
+     * Convert JSON to array.
+     *
      * @var array
      */
     protected $casts = [
-        'tags' => 'array', // Will converted to (Array)
-        'recommended_addons' => 'array', // Will converted to (Array)
+        'subject' => 'array', // Will converted to (Array)
     ];
-
-    /**
-     * Get all the tags from the product.
-     */
-    public function tags()
-    {
-        return $this->hasMany(Tag::class);
-    }
 }

@@ -7,8 +7,8 @@ use App\Helpers\HttpStatusCodes;
 use App\Models\User;
 use App\Validators\ValidatesAccountsRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AccountsController extends Controller
@@ -16,7 +16,7 @@ class AccountsController extends Controller
     use ValidatesAccountsRequests;
 
     /**
-     * View user account
+     * View user account.
      *
      * @param Request $request
      *
@@ -33,13 +33,13 @@ class AccountsController extends Controller
     }
 
     /**
-     * Update user account
+     * Update user account.
      *
      * @param Request $request
      *
-     * @return JsonResponse
-     *
      * @throws
+     *
+     * @return JsonResponse
      */
     public function update(Request $request)
     {
@@ -50,7 +50,7 @@ class AccountsController extends Controller
         $user->update([
             'name' => $request->get('name', $user->name),
             'email' => $request->get('email', $user->email),
-            'password' => $request->has('password') ? Hash::make($request->input('password')) : $user->password
+            'password' => $request->has('password') ? Hash::make($request->input('password')) : $user->password,
         ]);
 
         $user->save();
@@ -67,7 +67,7 @@ class AccountsController extends Controller
     }
 
     /**
-     * Delete user account
+     * Delete user account.
      *
      * @param Request $request
      *
@@ -80,6 +80,8 @@ class AccountsController extends Controller
 
         AuthHelper::revokeAllRefreshTokens($request->user_id);
 
+        // TODO: Send delete account email
+
         return response()->json(
             null,
             HttpStatusCodes::SUCCESS_NO_CONTENT
@@ -87,13 +89,14 @@ class AccountsController extends Controller
     }
 
     /**
-     * Show all sessions
+     * Show all sessions.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function showSessions(Request $request) {
+    public function showSessions(Request $request)
+    {
         $user = User::findOrFail($request->user_id);
         $refresh_tokens = $user->refreshTokens();
 
@@ -104,15 +107,16 @@ class AccountsController extends Controller
     }
 
     /**
-     * Revoke the refresh_token
+     * Revoke the refresh_token.
      *
      * @param Request $request
      *
-     * @return JsonResponse
-     *
      * @throws
+     *
+     * @return JsonResponse
      */
-    public function revoke(Request $request) {
+    public function revoke(Request $request)
+    {
         $this->validateRevoke($request);
 
         $session_uuid = $request->get('session_uuid');
@@ -120,7 +124,7 @@ class AccountsController extends Controller
         if ($session_uuid === $request->session_uuid) {
             return response()->json(
                 [
-                    'error' => "you can't revoke current session, please use logout endpoint"
+                    'error' => "you can't revoke current session, please use logout endpoint",
                 ],
                 HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
             );

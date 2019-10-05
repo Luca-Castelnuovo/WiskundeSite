@@ -2,34 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Helpers\HttpStatusCodes;
+use App\Models\Product;
 use App\Validators\ValidatesProductsRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ProductsController extends Controller {
+class ProductsController extends Controller
+{
     use ValidatesProductsRequests;
 
     /**
-     * Show all products
+     * Show all products.
      *
      * @return JsonResponse
      */
     public function index()
     {
         $products = Product::all();
+
         return response()->json($products, HttpStatusCodes::SUCCESS_OK);
     }
 
     /**
-     * View product (multiple can be requested with comma's)
+     * View product (multiple can be requested with comma's).
      *
      * @param string
+     * @param mixed $id
      *
      * @return JsonResponse
      */
-    public function show($id) {
+    public function show($id)
+    {
         $ids = array_map('intval', explode(',', $id));
 
         return response()->json(
@@ -39,13 +43,14 @@ class ProductsController extends Controller {
     }
 
     /**
-     * Create product
+     * Create product.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function create(Request $request) {
+    public function create(Request $request)
+    {
         $this->validateCreate($request);
 
         $product = Product::create([
@@ -53,7 +58,7 @@ class ProductsController extends Controller {
             'description' => $request->get('description'),
             'img_url' => $request->get('img_url'),
             'price' => $request->get('price'),
-            'tags' => $request->get('tags'),
+            'subject' => $request->get('subject'),
             'recommended_addons' => $request->get('recommended_addons'),
         ]);
 
@@ -64,14 +69,15 @@ class ProductsController extends Controller {
     }
 
     /**
-     * Update product
+     * Update product.
      *
      * @param Request $request
      * @param $id
      *
      * @return JsonResponse
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $product = Product::findOrFail($id);
 
         $this->validateUpdate($request, $product);
@@ -81,7 +87,7 @@ class ProductsController extends Controller {
             'description' => $request->get('description', $product->description),
             'img_url' => $request->get('img_url', $product->img_url),
             'price' => $request->get('price', $product->price),
-            'tags' => $request->get('tags', $product->tags),
+            'subject' => $request->get('subject', $product->subject),
             'recommended_addons' => $request->get('recommended_addons', $product->recommended_addons),
         ]);
 
@@ -94,13 +100,14 @@ class ProductsController extends Controller {
     }
 
     /**
-     * Delete product
+     * Delete product.
      *
      * @param $id
      *
      * @return JsonResponse
      */
-    public function delete($id) {
+    public function delete($id)
+    {
         Product::findOrFail($id)->delete();
 
         return response()->json(

@@ -4,26 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Tag extends Model
+class Subject extends Model
 {
     /**
-     * The attributes that are mass assignable
+     * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
         'name',
-        'color'
     ];
 
     /**
-     * The fields that will be transformed by Carbon
+     * The fields that will be transformed by Carbon.
      *
      * @var array
      */
     protected $dates = [
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     /**

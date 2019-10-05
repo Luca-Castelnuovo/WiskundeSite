@@ -1,15 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateProductsTable extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up()
     {
@@ -18,17 +16,13 @@ class CreateProductsTable extends Migration
             $table->string('name')->unique();
             $table->string('img_url')->nullable();
             $table->float('price');
-            $table->boolean('is_healthy');
-            $table->string('tags')->nullable();
-            $table->string('recommended_addons')->nullable();
+            $table->string('subject');
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down()
     {
