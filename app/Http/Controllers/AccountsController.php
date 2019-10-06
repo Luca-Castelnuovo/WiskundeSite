@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\AuthHelper;
 use App\Helpers\HttpStatusCodes;
 use App\Models\User;
 use App\Validators\ValidatesAccountsRequests;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -57,7 +55,7 @@ class AccountsController extends Controller
 
         // If user changes password revoke all refresh_tokens
         if ($request->has('password')) {
-            AuthHelper::revokeAllRefreshTokens($user->id);
+            Session::where('user_id', $user->id)->delete();
         }
 
         return response()->json(
@@ -76,9 +74,10 @@ class AccountsController extends Controller
     public function delete(Request $request)
     {
         $user = User::findOrFail($request->user_id);
-        $user->delete();
 
-        AuthHelper::revokeAllRefreshTokens($request->user_id);
+        Session::where('user_id', $user->id)->delete();
+
+        $user->delete();
 
         // TODO: Send delete account email
 
@@ -130,13 +129,20 @@ class AccountsController extends Controller
             );
         }
 
-        if (!AuthHelper::logout($request->user_id, $request->get('session_uuid'))) {
-            throw new ModelNotFoundException();
+        $session = Session::findOrFail($request->session_uuid);
+
+        if (!$session || $session->user_id !== $request->user_id) {
+            return $this->respondError(
+                'session not found',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
         }
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        $session->delete();
+
+        return $this->respondSuccess(
+            'session_revoked',
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 }

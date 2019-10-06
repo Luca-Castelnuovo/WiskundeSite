@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\AuthHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\HttpStatusCodes;
 use App\Helpers\JWTHelper;
@@ -59,13 +58,18 @@ class AuthController extends Controller
 
         $session->save();
 
-        $access_token = AuthHelper::createAccessToken(
-            $session->session_uuid,
-            $session->user_id
+        $access_token = $access_token = JWTHelper::create(
+            'auth',
+            config('tokens.access_token.ttl'),
+            [
+                'sub' => $session->user_id,
+                'session_uuid' => $session->session_uuid,
+                'role' => 'student',
+            ]
         );
 
         return $this->respondSuccess(
-            'login_successful',
+            'login successful',
             HttpStatusCodes::SUCCESS_OK,
             [
                 'access_token' => $access_token,
@@ -129,13 +133,18 @@ class AuthController extends Controller
         $session->save();
 
         // New access_token
-        $access_token = AuthHelper::createAccessToken(
-            $session->session_uuid,
-            $session->user_id
+        $access_token = JWTHelper::create(
+            'auth',
+            config('tokens.access_token.ttl'),
+            [
+                'sub' => $session->user_id,
+                'session_uuid' => $session->session_uuid,
+                'role' => 'student',
+            ]
         );
 
         return $this->respondSuccess(
-            'refresh_successful',
+            'session refreshed',
             HttpStatusCodes::SUCCESS_OK,
             [
                 'access_token' => $access_token,
@@ -154,8 +163,6 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $this->validateLogout($request);
-
         $session = Session::findOrFail($request->session_uuid);
 
         if (!$session || $session->user_id !== $request->user_id) {
@@ -168,7 +175,7 @@ class AuthController extends Controller
         $session->delete();
 
         return $this->respondSuccess(
-            'logout_successful',
+            'logout successful',
             HttpStatusCodes::SUCCESS_OK
         );
     }
@@ -215,7 +222,7 @@ class AuthController extends Controller
         Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
 
         return $this->respondSuccess(
-            'registration_successful',
+            'registration successful',
             HttpStatusCodes::SUCCESS_CREATED,
             $user
         );
@@ -241,10 +248,15 @@ class AuthController extends Controller
             );
         }
 
-        $user = User::where(
-            'email',
-            $request->get('email')
-        )->get();
+        $user = User::where('email', $request->get('email'))->get();
+
+        if (!$user) {
+            // Fake success
+            return $this->respondSuccess(
+                'reset requested',
+                HttpStatusCodes::SUCCESS_OK
+            );
+        }
 
         $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
         $reset_password_token_JWT = JWTHelper::create(
@@ -262,7 +274,7 @@ class AuthController extends Controller
         Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user, $reset_password_token_JWT));
 
         return $this->respondSuccess(
-            'resetRequest_successfull',
+            'reset requested',
             HttpStatusCodes::SUCCESS_OK
         );
     }
@@ -311,7 +323,7 @@ class AuthController extends Controller
         $user->save();
 
         return $this->respondSuccess(
-            'resetConfirm_successfull',
+            'reset confirmed',
             HttpStatusCodes::SUCCESS_OK
         );
     }
@@ -359,7 +371,7 @@ class AuthController extends Controller
         $user->save();
 
         return $this->respondSuccess(
-            'verification_successfull',
+            'verification successfull',
             HttpStatusCodes::SUCCESS_OK
         );
     }
