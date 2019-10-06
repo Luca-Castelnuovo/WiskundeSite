@@ -11,16 +11,12 @@
 |
 */
 
-/**
- * Factory definition for model App\Models\User.
- */
+// Factory definition for model App\Models\User.
 $factory->define(App\Models\User::class, function ($faker) {
     return [
         'name' => $faker->name,
         'email' => $faker->unique()->safeEmail,
         'password' => app('hash')->make('test'),
-
-        //'address' => $faker->address
     ];
 });
 

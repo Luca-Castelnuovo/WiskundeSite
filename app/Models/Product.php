@@ -37,13 +37,4 @@ class Product extends Model
         'created_at',
         'updated_at',
     ];
-
-    /**
-     * Convert JSON to array.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'subject' => 'array', // Will converted to (Array)
-    ];
 }

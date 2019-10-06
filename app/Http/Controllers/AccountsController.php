@@ -14,7 +14,7 @@ class AccountsController extends Controller
     use ValidatesAccountsRequests;
 
     /**
-     * View user account.
+     * View user.
      *
      * @param Request $request
      *
@@ -24,18 +24,18 @@ class AccountsController extends Controller
     {
         $user = User::findOrFail($request->user_id);
 
-        return response()->json(
-            $user,
-            HttpStatusCodes::SUCCESS_OK
+        return $this->respondSuccess(
+            '',
+            HttpStatusCodes::SUCCESS_OK,
+            $user
         );
     }
 
     /**
-     * Update user account.
+     * Update user
+     * Returns updated user.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
@@ -58,14 +58,16 @@ class AccountsController extends Controller
             Session::where('user_id', $user->id)->delete();
         }
 
-        return response()->json(
-            $user,
-            HttpStatusCodes::SUCCESS_OK
+        return $this->respondSuccess(
+            'account updated',
+            HttpStatusCodes::SUCCESS_OK,
+            $user
         );
     }
 
     /**
-     * Delete user account.
+     * Delete user
+     * Revokes all sessions.
      *
      * @param Request $request
      *
@@ -81,14 +83,14 @@ class AccountsController extends Controller
 
         // TODO: Send delete account email
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        return $this->respondSuccess(
+            'account deleted',
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Show all sessions.
+     * Show sessions.
      *
      * @param Request $request
      *
@@ -99,18 +101,17 @@ class AccountsController extends Controller
         $user = User::findOrFail($request->user_id);
         $refresh_tokens = $user->refreshTokens();
 
-        return response()->json(
-            $refresh_tokens->get(),
-            HttpStatusCodes::SUCCESS_OK
+        return $this->respondSuccess(
+            '',
+            HttpStatusCodes::SUCCESS_OK,
+            $refresh_tokens->get()
         );
     }
 
     /**
-     * Revoke the refresh_token.
+     * Revoke an session.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */

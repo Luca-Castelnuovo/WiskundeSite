@@ -100,7 +100,6 @@ class AuthController extends Controller
             );
         }
 
-        // Validate Session
         if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
             return $this->respondError(
                 'session invalid',
@@ -124,7 +123,6 @@ class AuthController extends Controller
             );
         }
 
-        // Update refresh_token
         $new_refresh_token = Str::random(config('tokens.refresh_token.length'));
         $session->refresh_token_hash_old = $session->refresh_token_hash;
         $session->refresh_token_hash = Hash::make($new_refresh_token);
@@ -132,7 +130,6 @@ class AuthController extends Controller
 
         $session->save();
 
-        // New access_token
         $access_token = JWTHelper::create(
             'auth',
             config('tokens.access_token.ttl'),

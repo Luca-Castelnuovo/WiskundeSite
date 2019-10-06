@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
@@ -38,9 +38,8 @@ $app->configure('app');
 $app->configure('captcha');
 $app->configure('CORS');
 $app->configure('mail');
-$app->configure('services');
+$app->configure('AWS');
 $app->configure('tokens');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -93,7 +92,7 @@ $app->middleware([
 ]);
 
 $app->routeMiddleware([
-    'auth' => App\Http\Middleware\JWTMiddleware::class
+    'auth' => App\Http\Middleware\JWTMiddleware::class,
 ]);
 
 /*
@@ -126,7 +125,7 @@ $app->register(Mollie\Laravel\MollieServiceProvider::class);
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
 ], function ($router) {
-    require __DIR__ . '/../routes/web.php';
+    require __DIR__.'/../routes/web.php';
 });
 
 return $app;

@@ -35,10 +35,7 @@ class JWTMiddleware
             );
         }
 
-        // Put the user_id in the request
         $request->user_id = $credentials->sub;
-
-        // Put the session_uuid in the request
         $request->session_uuid = $credentials->session_uuid;
 
         return $next($request);
