@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Access Token
@@ -11,19 +10,11 @@ return [
     |
     */
     'access_token' => [
-        'algorithm' => 'RS256',         // Indicates which algorithm is used to sign and encrypt the JWT
-        'iss' => env('APP_URL'),        // Indicates who issued the JWT
-        'ttl' => 60 * 15,               // Indicates how long the token is valid
-        'public_key' => str_replace(    // Indicates the JWT public key
-            '||||',
-            PHP_EOL,
-            env('JWT_PUBLIC_KEY')
-        ),
-        'private_key' => str_replace(   // Indicates the JWT private key
-            '||||',
-            PHP_EOL,
-            env('JWT_PRIVATE_KEY')
-        ),
+        'algorithm' => 'RS256', // Indicates which algorithm is used to sign and encrypt the JWT
+        'iss' => env('APP_URL'), // Indicates who issued the JWT
+        'ttl' => 900, // Indicates how long the token is valid (15 minutes)
+        'public_key' => str_replace('||||', PHP_EOL, env('JWT_PUBLIC_KEY')), // Indicates the JWT public key
+        'private_key' => str_replace('||||', PHP_EOL, env('JWT_PRIVATE_KEY')), // Indicates the JWT private key
     ],
 
     /*
@@ -35,8 +26,8 @@ return [
     |
     */
     'refresh_token' => [
-        'length' => 256,    // Indicates the amount of characters the token contains
-        'ttl' => 60 * 15,   // Indicates how long the token is valid
+        'length' => 256, // Indicates the amount of characters the token contains
+        'ttl' => 900, // Indicates how long the token is valid (15 minutes)
     ],
 
     /*
@@ -48,7 +39,8 @@ return [
     |
     */
     'verify_mail_token' => [
-        'length' => 128,     // Indicates the amount of characters the token contains
+        'length' => 256, // Indicates the amount of characters the token contains
+        'ttl' => 172800, // Indicates how long the token is valid (48 hour)
     ],
 
     /*
@@ -60,6 +52,7 @@ return [
     |
     */
     'reset_password_token' => [
-        'length' => 256,     // Indicates the amount of characters the token contains
+        'length' => 256, // Indicates the amount of characters the token contains
+        'ttl' => 3600, // Indicates how long the token is valid (1 hour)
     ],
 ];

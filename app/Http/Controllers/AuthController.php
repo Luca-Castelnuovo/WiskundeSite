@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Helpers\AuthHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\HttpStatusCodes;
+use App\Helpers\JWTHelper;
 use App\Mail\RegisterConfirmationMail;
 use App\Mail\RequestResetPasswordMail;
+use App\Models\Session;
 use App\Models\User;
 use App\Validators\ValidatesAuthRequests;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,13 +23,12 @@ class AuthController extends Controller
     use ValidatesAuthRequests;
 
     /**
-     * Login user and return tokens.
+     * Authenticate User,
+     * Returns access_token and refresh_token.
      *
      * @param Request $request
      *
-     * @throws
-     *
-     * @return mixed
+     * @return JsonResponse
      */
     public function login(Request $request)
     {
@@ -36,33 +37,48 @@ class AuthController extends Controller
         $user = User::where('email', $request->get('email'))->first();
 
         if (!$user || !Hash::check($request->get('password'), $user->password)) {
-            return $this->respond([
-                'errors' => [
-                    'email or password' => ['is invalid'],
-                ],
-            ], HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED);
+            return $this->respondError(
+                'email or password is invalid',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
         }
 
-        if (null !== $user->verify_email_token) {
-            return $this->respond([
-                'errors' => [
-                    'account' => ['not active'],
-                ],
-            ], HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED);
+        if ($user->verify_email_token) {
+            return $this->respondError(
+                'account not active',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
         }
 
-        return response()->json(
-            AuthHelper::login($user->id),
-            HttpStatusCodes::SUCCESS_OK
+        $session = new Session();
+
+        $refresh_token = Str::random(config('tokens.refresh_token.length'));
+        $session->user_id = $user->id;
+        $session->refresh_token_hash = Hash::make($refresh_token);
+        $session->refresh_token_expires = time() + config('tokens.refresh_token.ttl');
+
+        $session->save();
+
+        $access_token = AuthHelper::createAccessToken(
+            $session->session_uuid,
+            $session->user_id
+        );
+
+        return $this->respondSuccess(
+            'login_successful',
+            HttpStatusCodes::SUCCESS_OK,
+            [
+                'access_token' => $access_token,
+                'refresh_token' => $refresh_token,
+            ]
         );
     }
 
     /**
-     * Refreshes the access_token.
+     * Refresh access_token
+     * Returns access_token and refresh_token.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
@@ -70,42 +86,99 @@ class AuthController extends Controller
     {
         $this->validateRefresh($request);
 
-        return response()->json(
-            AuthHelper::refresh(
-                $request->get('session_uuid'),
-                $request->get('refresh_token')
-            ),
-            HttpStatusCodes::SUCCESS_OK
+        $refresh_token = $request->get('refresh_token');
+
+        $session = Session::find($request->get('session_uuid'));
+        if (!$session) {
+            return $this->respondError(
+                'session not found',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
+        }
+
+        // Validate Session
+        if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
+            return $this->respondError(
+                'session invalid',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
+        }
+
+        if ($session->refresh_token_expires->isPast()) {
+            return $this->respondError(
+                'session expired',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
+        }
+
+        if (Hash::check($refresh_token, $session->refresh_token_hash_old)) {
+            $session->delete();
+
+            return $this->respondError(
+                'token theft detected',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
+        }
+
+        // Update refresh_token
+        $new_refresh_token = Str::random(config('tokens.refresh_token.length'));
+        $session->refresh_token_hash_old = $session->refresh_token_hash;
+        $session->refresh_token_hash = Hash::make($new_refresh_token);
+        $session->refresh_token_expires = time() + config('tokens.refresh_token.ttl');
+
+        $session->save();
+
+        // New access_token
+        $access_token = AuthHelper::createAccessToken(
+            $session->session_uuid,
+            $session->user_id
+        );
+
+        return $this->respondSuccess(
+            'refresh_successful',
+            HttpStatusCodes::SUCCESS_OK,
+            [
+                'access_token' => $access_token,
+                'refresh_token' => $new_refresh_token,
+            ]
         );
     }
 
     /**
-     * Revoke the refresh_token.
+     * Revoke refresh_token
+     * Returns 204.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
     public function logout(Request $request)
     {
-        if (!AuthHelper::logout($request->user_id, $request->session_uuid)) {
-            throw new ModelNotFoundException();
+        $this->validateLogout($request);
+
+        $session = Session::findOrFail($request->session_uuid);
+
+        if (!$session || $session->user_id !== $request->user_id) {
+            return $this->respondError(
+                'session not found',
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
         }
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        $session->delete();
+
+        return $this->respondSuccess(
+            'logout_successful',
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Register account.
+     * Register account
+     * Sends email
+     * Returns user model.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
@@ -114,38 +187,46 @@ class AuthController extends Controller
         $this->validateRegister($request);
 
         if (!CaptchaHelper::validate($request->get('captcha_response'))) {
-            return response()->json(
-                [
-                    'error' => 'invalid captcha',
-                ],
+            return $this->respondError(
+                'invalid captcha',
                 HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
             );
         }
-
-        $verify_mail_token = Str::random(config('tokens.verify_mail_token.length'));
-        $verify_mail_token_hash = Hash::make($verify_mail_token);
 
         $user = User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
-            'verify_email_token' => $verify_mail_token_hash,
         ]);
 
-        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token));
+        $verify_mail_token = Str::random(config('tokens.verify_mail_token.length'));
+        $verify_mail_token_JWT = JWTHelper::create(
+            'verify_email',
+            config('tokens.verify_mail_token.ttl'),
+            [
+                'sub' => $user->id,
+                'token' => $verify_mail_token,
+            ]
+        );
 
-        return response()->json(
-            $user,
-            HttpStatusCodes::SUCCESS_CREATED
+        $user->verify_email_token = $verify_mail_token;
+        $user->save();
+
+        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
+
+        return $this->respondSuccess(
+            'registration_successful',
+            HttpStatusCodes::SUCCESS_CREATED,
+            $user
         );
     }
 
     /**
-     * Request an reset password email.
+     * Request Reset
+     * Sends email
+     * Returns 204.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
@@ -154,10 +235,8 @@ class AuthController extends Controller
         $this->validateRequestPasswordReset($request);
 
         if (!CaptchaHelper::validate($request->get('captcha_response'))) {
-            return response()->json(
-                [
-                    'error' => 'invalid captcha',
-                ],
+            return $this->respondError(
+                'invalid captcha',
                 HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
             );
         }
@@ -168,25 +247,31 @@ class AuthController extends Controller
         )->get();
 
         $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
-        $reset_password_token_hash = Hash::make($reset_password_token);
-        $user->reset_password_token = $reset_password_token_hash;
+        $reset_password_token_JWT = JWTHelper::create(
+            'reset_password',
+            config('tokens.reset_password_token.ttl'),
+            [
+                'sub' => $user->id,
+                'token' => $reset_password_token,
+            ]
+        );
 
+        $user->reset_password_token = $reset_password_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user, $reset_password_token));
+        Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user, $reset_password_token_JWT));
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        return $this->respondSuccess(
+            'resetRequest_successfull',
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Confirm a password reset.
+     * Confirm Reset
+     * Returns 204.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
@@ -194,40 +279,48 @@ class AuthController extends Controller
     {
         $this->validatePasswordReset($request);
 
-        $reset_password_token_hash = Hash::make($request->get('reset_password_token'));
+        $reset_password_token = $request->get('reset_password_token');
 
-        $user = User::where(
-            'reset_password_token',
-            $reset_password_token_hash
-        )->first();
-
-        if (null === $user) {
-            return response()->json(
-                [
-                    'error' => 'invalid reset token',
-                ],
+        try {
+            $credentials = JWTHelper::decode($reset_password_token, 'reset_password');
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
                 HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
             );
         }
 
+        $user = User::findOrFail($credentials->sub);
+
+        if (!$user->reset_password_token) {
+            return $this->respondError(
+                'password reset not active',
+                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+            );
+        }
+
+        if ($user->reset_password_token !== $credentials->token) {
+            return $this->respondError(
+                'invalid reset token',
+                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+            );
+        }
+
         $user->password = Hash::make($request->get('password'));
-
         $user->reset_password_token = null;
-
         $user->save();
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        return $this->respondSuccess(
+            'resetConfirm_successfull',
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 
     /**
-     * Verify user email and activate account.
+     * Verify email
+     * Returns 204.
      *
      * @param Request $request
-     *
-     * @throws
      *
      * @return JsonResponse
      */
@@ -235,31 +328,39 @@ class AuthController extends Controller
     {
         $this->validateVerifyEmailToken($request);
 
-        $verify_email_token_hash = Hash::make($request->get('verify_email_token'));
+        $verify_email_token = $request->get('verify_email_token');
 
-        $user = User::where(
-            'verify_email_token',
-            $verify_email_token_hash
-        )->first();
-
-        dd($user, $verify_email_token_hash);
-
-        if (null === $user) {
-            return response()->json(
-                [
-                    'error' => 'invalid verification token',
-                ],
+        try {
+            $credentials = JWTHelper::decode($verify_email_token, 'verify_email');
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
                 HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
             );
         }
 
-        $user->verify_email_token = null;
+        $user = User::findOrFail($credentials->sub);
 
+        if (!$user->verify_email_token) {
+            return $this->respondError(
+                'email already activated',
+                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+            );
+        }
+
+        if ($user->verify_email_token !== $credentials->token) {
+            return $this->respondError(
+                'invalid verification token',
+                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+            );
+        }
+
+        $user->verify_email_token = null;
         $user->save();
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        return $this->respondSuccess(
+            'verification_successfull',
+            HttpStatusCodes::SUCCESS_OK
         );
     }
 }

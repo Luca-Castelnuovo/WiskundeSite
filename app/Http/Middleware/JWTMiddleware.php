@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\AuthHelper;
-use App\Models\User;
+use App\Helpers\HttpStatusCodes;
+use App\Helpers\JWTHelper;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class JWTMiddleware
 {
@@ -19,15 +21,18 @@ class JWTMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $access_token = AuthHelper::parseAuthHeader($request->headers->get('Authorization'));
-        $credentials = AuthHelper::validateAccessToken($access_token);
+        $authorization_header = $request->headers->get('Authorization');
+        $access_token = Str::replaceFirst('Bearer ', '', $authorization_header);
 
-        // Returns an error message for an invalid token
-        if (isset($credentials->error)) {
-            $http_code = $credentials->http;
-            unset($credentials->http);
-
-            return response()->json($credentials, $http_code);
+        try {
+            $credentials = JWTHelper::decode($access_token, 'auth');
+        } catch (Exception $error) {
+            return response()->json(
+                [
+                    'error' => $error->getMessage(),
+                ],
+                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+            );
         }
 
         // Put the user_id in the request
