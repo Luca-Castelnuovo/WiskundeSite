@@ -2,8 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\HttpStatusCodes;
 use App\Helpers\JWTHelper;
+use App\Models\Session;
+use App\Models\User;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
@@ -28,15 +29,13 @@ class JWTMiddleware
             $credentials = JWTHelper::decode($access_token, 'auth');
         } catch (Exception $error) {
             return response()->json(
-                [
-                    'error' => $error->getMessage(),
-                ],
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                ['error' => $error->getMessage()],
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
-        $request->user_id = $credentials->sub;
-        $request->session_uuid = $credentials->session_uuid;
+        $request->user = User::findOrFail($credentials->sub);
+        $request->refresh_session = Session::findOrFail($credentials->session_uuid);
 
         return $next($request);
     }

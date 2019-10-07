@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\CaptchaHelper;
-use App\Helpers\HttpStatusCodes;
 use App\Helpers\JWTHelper;
 use App\Mail\RegisterConfirmationMail;
 use App\Mail\RequestResetPasswordMail;
@@ -38,14 +37,14 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->get('password'), $user->password)) {
             return $this->respondError(
                 'email or password is invalid',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
         if ($user->verify_email_token) {
             return $this->respondError(
                 'account not active',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -63,14 +62,14 @@ class AuthController extends Controller
             config('tokens.access_token.ttl'),
             [
                 'sub' => $session->user_id,
-                'session_uuid' => $session->session_uuid,
+                'session_uuid' => $session->id,
                 'role' => 'student',
             ]
         );
 
         return $this->respondSuccess(
             'login successful',
-            HttpStatusCodes::SUCCESS_OK,
+            'SUCCESS_OK',
             [
                 'access_token' => $access_token,
                 'refresh_token' => $refresh_token,
@@ -96,21 +95,21 @@ class AuthController extends Controller
         if (!$session) {
             return $this->respondError(
                 'session not found',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
         if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
             return $this->respondError(
                 'session invalid',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
         if ($session->refresh_token_expires->isPast()) {
             return $this->respondError(
                 'session expired',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -119,7 +118,7 @@ class AuthController extends Controller
 
             return $this->respondError(
                 'token theft detected',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -135,14 +134,14 @@ class AuthController extends Controller
             config('tokens.access_token.ttl'),
             [
                 'sub' => $session->user_id,
-                'session_uuid' => $session->session_uuid,
+                'session_uuid' => $session->id,
                 'role' => 'student',
             ]
         );
 
         return $this->respondSuccess(
             'session refreshed',
-            HttpStatusCodes::SUCCESS_OK,
+            'SUCCESS_OK',
             [
                 'access_token' => $access_token,
                 'refresh_token' => $new_refresh_token,
@@ -160,12 +159,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $session = Session::findOrFail($request->session_uuid);
+        $session = $request->refresh_session;
 
-        if (!$session || $session->user_id !== $request->user_id) {
+        if (!$session || $session->user_id !== $request->user->id) {
             return $this->respondError(
                 'session not found',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -173,7 +172,7 @@ class AuthController extends Controller
 
         return $this->respondSuccess(
             'logout successful',
-            HttpStatusCodes::SUCCESS_OK
+            'SUCCESS_OK'
         );
     }
 
@@ -193,7 +192,7 @@ class AuthController extends Controller
         if (!CaptchaHelper::validate($request->get('captcha_response'))) {
             return $this->respondError(
                 'invalid captcha',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -220,7 +219,7 @@ class AuthController extends Controller
 
         return $this->respondSuccess(
             'registration successful',
-            HttpStatusCodes::SUCCESS_CREATED,
+            'SUCCESS_CREATED',
             $user
         );
     }
@@ -241,7 +240,7 @@ class AuthController extends Controller
         if (!CaptchaHelper::validate($request->get('captcha_response'))) {
             return $this->respondError(
                 'invalid captcha',
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -251,7 +250,7 @@ class AuthController extends Controller
             // Fake success
             return $this->respondSuccess(
                 'reset requested',
-                HttpStatusCodes::SUCCESS_OK
+                'SUCCESS_OK'
             );
         }
 
@@ -272,7 +271,7 @@ class AuthController extends Controller
 
         return $this->respondSuccess(
             'reset requested',
-            HttpStatusCodes::SUCCESS_OK
+            'SUCCESS_OK'
         );
     }
 
@@ -295,7 +294,7 @@ class AuthController extends Controller
         } catch (Exception $error) {
             return $this->respondError(
                 $error->getMessage(),
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -304,14 +303,14 @@ class AuthController extends Controller
         if (!$user->reset_password_token) {
             return $this->respondError(
                 'password reset not active',
-                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+                'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
         if ($user->reset_password_token !== $credentials->token) {
             return $this->respondError(
                 'invalid reset token',
-                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+                'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
@@ -321,7 +320,7 @@ class AuthController extends Controller
 
         return $this->respondSuccess(
             'reset confirmed',
-            HttpStatusCodes::SUCCESS_OK
+            'SUCCESS_OK'
         );
     }
 
@@ -344,7 +343,7 @@ class AuthController extends Controller
         } catch (Exception $error) {
             return $this->respondError(
                 $error->getMessage(),
-                HttpStatusCodes::CLIENT_ERROR_UNAUTHORIZED
+                'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
@@ -353,14 +352,14 @@ class AuthController extends Controller
         if (!$user->verify_email_token) {
             return $this->respondError(
                 'email already activated',
-                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+                'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
         if ($user->verify_email_token !== $credentials->token) {
             return $this->respondError(
                 'invalid verification token',
-                HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+                'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
@@ -369,7 +368,7 @@ class AuthController extends Controller
 
         return $this->respondSuccess(
             'verification successfull',
-            HttpStatusCodes::SUCCESS_OK
+            'SUCCESS_OK'
         );
     }
 }

@@ -3,41 +3,39 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Helpers\HttpStatusCodes;
 use Illuminate\Http\Request;
 
-class JSONMiddleware {
-
+class JSONMiddleware
+{
     /**
      * If POST,PUT,PATCH requests contains JSON interpret it
-     * Also validate that the provided JSON is valid
+     * Also validate that the provided JSON is valid.
      *
      * @param Request $request
      * @param Closure $next
      *
      * @return mixed
      */
-
     public function handle(Request $request, Closure $next)
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
             if (!$request->isJson()) {
                 return response()->json(
                     [
-                        'error' => 'Body should be a JSON object'
+                        'error' => 'Body should be a JSON object',
                     ],
-                    HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+                    'CLIENT_ERROR_BAD_REQUEST'
                 );
             }
 
             json_decode($request->getContent());
 
-            if ((json_last_error() !== JSON_ERROR_NONE)) {
+            if ((JSON_ERROR_NONE !== json_last_error())) {
                 return response()->json(
                     [
-                        'error' => 'Problems parsing JSON'
+                        'error' => 'Problems parsing JSON',
                     ],
-                    HttpStatusCodes::CLIENT_ERROR_BAD_REQUEST
+                    'CLIENT_ERROR_BAD_REQUEST'
                 );
             }
 

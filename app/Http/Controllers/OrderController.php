@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpStatusCodes;
 use App\Validators\ValidatesOrderRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +12,7 @@ class OrderController extends Controller
     use ValidatesOrderRequests;
 
     /**
-     * Create a new order.
+     * Create order.
      *
      * @param Request $request
      *
@@ -21,7 +20,7 @@ class OrderController extends Controller
      */
     public function new(Request $request)
     {
-        // $this->validateCreate($request);
+        $this->validateCreate($request);
 
         $payment = Mollie::api()->payments()->create([
             'amount' => [
@@ -29,17 +28,18 @@ class OrderController extends Controller
                 'value' => '10.00',
             ],
             'description' => 'My first API payment',
-            'redirectUrl' => 'https://google.com',
+            'redirectUrl' => 'https://files.lucacastelnuovo.nl/general/images/hacked.gif',
             'webhookUrl' => 'https://enh6gp136zyzu.x.pipedream.net',
         ]);
 
         $payment = Mollie::api()->payments()->get($payment->id);
 
-        return response()->json(
+        return $this->respondSuccess(
+            'order created',
+            'SUCCESS_OK',
             [
                 'link' => $payment->getCheckoutUrl(),
-            ],
-            HttpStatusCodes::SUCCESS_OK
+            ]
         );
     }
 }

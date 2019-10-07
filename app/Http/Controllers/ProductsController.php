@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpStatusCodes;
 use App\Models\Product;
 use App\Validators\ValidatesProductsRequests;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +20,7 @@ class ProductsController extends Controller
     {
         $products = Product::all();
 
-        return response()->json($products, HttpStatusCodes::SUCCESS_OK);
+        return response()->json($products, 'SUCCESS_OK');
     }
 
     /**
@@ -38,7 +37,7 @@ class ProductsController extends Controller
 
         return response()->json(
             Product::findOrFail($ids),
-            HttpStatusCodes::SUCCESS_OK
+            'SUCCESS_OK'
         );
     }
 
@@ -64,7 +63,7 @@ class ProductsController extends Controller
 
         return response()->json(
             $product,
-            HttpStatusCodes::SUCCESS_CREATED
+            'SUCCESS_CREATED'
         );
     }
 
@@ -95,7 +94,7 @@ class ProductsController extends Controller
 
         return response()->json(
             $product,
-            HttpStatusCodes::SUCCESS_OK
+            'SUCCESS_OK'
         );
     }
 
@@ -112,7 +111,7 @@ class ProductsController extends Controller
 
         return response()->json(
             null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+            'SUCCESS_NO_CONTENT'
         );
     }
 }

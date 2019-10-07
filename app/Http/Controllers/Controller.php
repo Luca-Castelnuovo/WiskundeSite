@@ -8,6 +8,19 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
+    private $status_codes = [
+        'SUCCESS_OK' => 200,
+        'SUCCESS_CREATED',
+        'SUCCESS_NO_CONTENT',
+        'CLIENT_ERROR_BAD_REQUEST',
+        'CLIENT_ERROR_UNAUTHORIZED',
+        'CLIENT_ERROR_FORBIDDEN',
+        'CLIENT_ERROR_NOT_FOUND',
+        'METHOD_NOT_ALLOWED',
+        'CLIENT_ERROR_CONFLICT',
+        'CLIENT_ERROR_UNPROCESSABLE_ENTITY',
+    ];
+
     /**
      * Return generic json response with the given data.
      *
@@ -17,9 +30,11 @@ class Controller extends BaseController
      *
      * @return JsonResponse
      */
-    protected function respond($data, $statusCode = 'SUCCESS_OK', $headers = [])
+    protected function respond($data, $statusCode, $headers = [])
     {
-        return response($data, $statusCode, $headers);
+        $httpStatus = $this->status_codes[$statusCode];
+
+        return response($data, $httpStatus, $headers);
     }
 
     /**

@@ -38,7 +38,7 @@ $app->configure('app');
 $app->configure('captcha');
 $app->configure('CORS');
 $app->configure('mail');
-$app->configure('AWS');
+$app->configure('services');
 $app->configure('tokens');
 
 /*

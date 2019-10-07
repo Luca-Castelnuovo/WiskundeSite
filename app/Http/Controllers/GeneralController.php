@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpStatusCodes;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
@@ -17,7 +16,7 @@ class GeneralController extends Controller
     {
         return $this->respondSuccess(
             'https://docs.wiskundesite.nl',
-            HttpStatusCodes::SUCCESS_OK,
+            'SUCCESS_OK',
             [
                 'time' => Carbon::now()->toDateTimeString(),
                 'captcha_public_key' => config('captcha.public_key'),

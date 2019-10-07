@@ -2,65 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpStatusCodes;
 use App\Models\Product;
-use App\Models\Subject;
+use App\Validators\ValidatesProductsRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class SubjectsController extends Controller
+class ProductsController extends Controller
 {
-    use ValidatesSubjectsRequests;
+    use ValidatesProductsRequests;
 
     /**
-     * Show all subjects.
+     * Show products.
      *
      * @return JsonResponse
      */
     public function index()
     {
-        return response()->json(
-            Subject::all(),
-            HttpStatusCodes::SUCCESS_OK
+        $products = Product::all();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $products
         );
     }
 
     /**
-     * View subject (multiple can be requested with comma's).
+     * View product(s)
+     * Multiple can be requested with comma's
+     * e.g. /subjects/1,2.
      *
-     * @param string
-     * @param mixed $id
+     * @param string $id
      *
      * @return JsonResponse
      */
     public function show($id)
     {
         $ids = array_map('intval', explode(',', $id));
+        $products = Product::findOrFail($ids);
 
-        return response()->json(
-            Subject::findOrFail($ids),
-            HttpStatusCodes::SUCCESS_OK
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $products
         );
     }
 
     /**
-     * View products with the requested subject.
-     *
-     * @param string
-     * @param mixed $id
-     *
-     * @return JsonResponse
-     */
-    public function showProducts($id)
-    {
-        return response()->json(
-            Product::where('subject', $id)->get(),
-            HttpStatusCodes::SUCCESS_OK
-        );
-    }
-
-    /**
-     * Create subject.
+     * Create product.
      *
      * @param Request $request
      *
@@ -70,46 +59,56 @@ class SubjectsController extends Controller
     {
         $this->validateCreate($request);
 
-        $subject = Subject::create([
-            'name' => $request->get('name', $request->get('name')),
-            'color' => $request->get('color', $request->get('color')),
+        $product = Product::create([
+            'name' => $request->get('name'),
+            'description' => $request->get('description'),
+            'img_url' => $request->get('img_url'),
+            'price' => $request->get('price'),
+            'subject' => $request->get('subject'),
+            'recommended_addons' => $request->get('recommended_addons'),
         ]);
 
-        return response()->json(
-            $subject,
-            HttpStatusCodes::SUCCESS_CREATED
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_CREATED',
+            $product
         );
     }
 
     /**
-     * Update subject.
+     * Update product.
      *
      * @param Request $request
-     * @param $id
+     * @param int     $id
      *
      * @return JsonResponse
      */
     public function update(Request $request, $id)
     {
-        $subject = Subject::findOrFail($id);
+        $product = Product::findOrFail($id);
 
-        $this->validateUpdate($request, $subject);
+        $this->validateUpdate($request, $product);
 
-        $subject->update([
-            'name' => $request->get('name', $subject->name),
-            'color' => $request->get('color', $subject->color),
+        $product->update([
+            'name' => $request->get('name', $product->name),
+            'description' => $request->get('description', $product->description),
+            'img_url' => $request->get('img_url', $product->img_url),
+            'price' => $request->get('price', $product->price),
+            'subject' => $request->get('subject', $product->subject),
+            'recommended_addons' => $request->get('recommended_addons', $product->recommended_addons),
         ]);
 
-        $subject->save();
+        $product->save();
 
-        return response()->json(
-            $subject,
-            HttpStatusCodes::SUCCESS_OK
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $product
         );
     }
 
     /**
-     * Delete subject.
+     * Delete product.
      *
      * @param $id
      *
@@ -117,11 +116,11 @@ class SubjectsController extends Controller
      */
     public function delete($id)
     {
-        Subject::findOrFail($id)->delete();
+        Product::findOrFail($id)->delete();
 
-        return response()->json(
-            null,
-            HttpStatusCodes::SUCCESS_NO_CONTENT
+        return $this->respondSuccess(
+            'product deleted',
+            'SUCCESS_OK'
         );
     }
 }
