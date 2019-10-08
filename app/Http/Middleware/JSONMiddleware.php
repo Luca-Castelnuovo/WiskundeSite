@@ -22,7 +22,7 @@ class JSONMiddleware
             if (!$request->isJson()) {
                 return response()->json(
                     ['error' => 'Body should be a JSON object'],
-                    'CLIENT_ERROR_BAD_REQUEST'
+                    400 // TODO: 'CLIENT_ERROR_BAD_REQUEST'
                 );
             }
 
@@ -31,7 +31,7 @@ class JSONMiddleware
             if ((JSON_ERROR_NONE !== json_last_error())) {
                 return response()->json(
                     ['error' => 'Problems parsing JSON'],
-                    'CLIENT_ERROR_BAD_REQUEST'
+                    400 // TODO: 'CLIENT_ERROR_BAD_REQUEST'
                 );
             }
 
