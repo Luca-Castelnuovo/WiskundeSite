@@ -78,7 +78,7 @@ class ProductsController extends Controller
      * Update product.
      *
      * @param Request $request
-     * @param $id
+     * @param int     $id
      *
      * @return JsonResponse
      */
@@ -108,7 +108,7 @@ class ProductsController extends Controller
     /**
      * Delete product.
      *
-     * @param $id
+     * @param int $id
      *
      * @return JsonResponse
      */

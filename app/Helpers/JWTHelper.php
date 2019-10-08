@@ -58,7 +58,7 @@ class JWTHelper
             );
 
             if ($credentials->type !== $type) {
-                throw new Exception('JWT type is invalid');
+                throw new Exception('JWT type has invalid type');
             }
         } catch (ExpiredException $error) {
             throw new Exception('JWT has expired');

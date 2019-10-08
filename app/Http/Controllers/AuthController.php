@@ -153,7 +153,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->refresh_session->delete();
+        $session = Session::findOrFail($request->session_uuid);
+
+        $session->delete();
 
         return $this->respondSuccess(
             'logout successful',

@@ -10,7 +10,7 @@ class CaptchaHelper
     /**
      * Validates the captcha response.
      *
-     * @param $captcha_response
+     * @param string $captcha_response
      *
      * @throws GuzzleException
      *

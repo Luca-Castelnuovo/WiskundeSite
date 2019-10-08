@@ -3,8 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Helpers\JWTHelper;
-use App\Models\Session;
-use App\Models\User;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
@@ -30,13 +28,12 @@ class JWTMiddleware
         } catch (Exception $error) {
             return response()->json(
                 ['error' => $error->getMessage()],
-                // TODO: 'CLIENT_ERROR_UNAUTHORIZED'
-                401
+                401 // TODO: 'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
 
-        $request->refresh_session = Session::findOrFail($credentials->session_uuid);
-        $request->user = User::findOrFail($credentials->sub);
+        $request->session_uuid = $credentials->session_uuid;
+        $request->user_id = $credentials->sub;
 
         return $next($request);
     }

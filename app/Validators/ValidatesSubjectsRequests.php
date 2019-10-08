@@ -2,6 +2,7 @@
 
 namespace App\Validators;
 
+use App\Models\Subject;
 use Illuminate\Http\Request;
 
 trait ValidatesSubjectsRequests
@@ -22,9 +23,9 @@ trait ValidatesSubjectsRequests
      * Validate updating of existing product.
      *
      * @param Request $request
-     * @param $subject
+     * @param Subject $subject
      */
-    protected function validateUpdate(Request $request, $subject)
+    protected function validateUpdate(Request $request, Subject $subject)
     {
         if ($subject->name === $request->input('name')) {
             $name_rule = 'sometimes|max:255|alpha';

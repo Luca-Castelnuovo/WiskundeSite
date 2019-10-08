@@ -120,7 +120,7 @@ class AccountsController extends Controller
         $revokable_session_uuid = $request->get('session_uuid');
         $revokable_session = Session::findOrFail($revokable_session_uuid);
 
-        if ($revokable_session_uuid === $request->refresh_session->id) {
+        if ($revokable_session_uuid === $request->session_uuid) {
             return $this->respondError(
                 'can\'t revoke current session',
                 'CLIENT_ERROR_BAD_REQUEST'

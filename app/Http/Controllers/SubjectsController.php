@@ -3,53 +3,69 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Validators\ValidatesProductsRequests;
+use App\Models\Subject;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ProductsController extends Controller
+class SubjectsController extends Controller
 {
-    use ValidatesProductsRequests;
+    use ValidatesSubjectsRequests;
 
     /**
-     * Show products.
+     * Show subjects.
      *
      * @return JsonResponse
      */
     public function index()
     {
-        $products = Product::all();
+        $subjects = Subject::all();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $products
+            $subjects
         );
     }
 
     /**
-     * View product(s)
-     * Multiple can be requested with comma's
-     * e.g. /subjects/1,2.
+     * View subject (multiple can be requested with comma's).
      *
-     * @param string $id
+     * @param mixed $id
      *
      * @return JsonResponse
      */
     public function show($id)
     {
         $ids = array_map('intval', explode(',', $id));
-        $products = Product::findOrFail($ids);
+        $subjects = Subject::findOrFail($ids);
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $products
+            $subjects
         );
     }
 
     /**
-     * Create product.
+     * View products with the subject.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
+    public function showProducts($id)
+    {
+        $products_with_subject = Product::where('subject', $id)->get();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $products_with_subject
+        );
+    }
+
+    /**
+     * Create subject.
      *
      * @param Request $request
      *
@@ -59,24 +75,19 @@ class ProductsController extends Controller
     {
         $this->validateCreate($request);
 
-        $product = Product::create([
-            'name' => $request->get('name'),
-            'description' => $request->get('description'),
-            'img_url' => $request->get('img_url'),
-            'price' => $request->get('price'),
-            'subject' => $request->get('subject'),
-            'recommended_addons' => $request->get('recommended_addons'),
+        $subject = Subject::create([
+            'name' => $request->get('name', $request->get('name')),
         ]);
 
         return $this->respondSuccess(
             '',
             'SUCCESS_CREATED',
-            $product
+            $subject
         );
     }
 
     /**
-     * Update product.
+     * Update subject.
      *
      * @param Request $request
      * @param int     $id
@@ -85,41 +96,37 @@ class ProductsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $subject = Subject::findOrFail($id);
 
-        $this->validateUpdate($request, $product);
+        $this->validateUpdate($request, $subject);
 
-        $product->update([
-            'name' => $request->get('name', $product->name),
-            'description' => $request->get('description', $product->description),
-            'img_url' => $request->get('img_url', $product->img_url),
-            'price' => $request->get('price', $product->price),
-            'subject' => $request->get('subject', $product->subject),
-            'recommended_addons' => $request->get('recommended_addons', $product->recommended_addons),
+        $subject->update([
+            'name' => $request->get('name', $subject->name),
+            'color' => $request->get('color', $subject->color),
         ]);
 
-        $product->save();
+        $subject->save();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $product
+            $subject
         );
     }
 
     /**
-     * Delete product.
+     * Delete subject.
      *
-     * @param $id
+     * @param int $id
      *
      * @return JsonResponse
      */
     public function delete($id)
     {
-        Product::findOrFail($id)->delete();
+        Subject::findOrFail($id)->delete();
 
         return $this->respondSuccess(
-            'product deleted',
+            'subject deleted',
             'SUCCESS_OK'
         );
     }
