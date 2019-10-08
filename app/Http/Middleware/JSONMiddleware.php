@@ -24,7 +24,8 @@ class JSONMiddleware
                     [
                         'error' => 'Body should be a JSON object',
                     ],
-                    'CLIENT_ERROR_BAD_REQUEST'
+                    // TODO: 'CLIENT_ERROR_BAD_REQUEST'
+                    400
                 );
             }
 
@@ -35,7 +36,8 @@ class JSONMiddleware
                     [
                         'error' => 'Problems parsing JSON',
                     ],
-                    'CLIENT_ERROR_BAD_REQUEST'
+                   // TODO: 'CLIENT_ERROR_BAD_REQUEST'
+                   400
                 );
             }
 

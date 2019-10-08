@@ -30,7 +30,8 @@ class JWTMiddleware
         } catch (Exception $error) {
             return response()->json(
                 ['error' => $error->getMessage()],
-                'CLIENT_ERROR_UNAUTHORIZED'
+                // TODO: 'CLIENT_ERROR_UNAUTHORIZED'
+                401
             );
         }
 
