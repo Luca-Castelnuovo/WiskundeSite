@@ -21,9 +21,7 @@ class JSONMiddleware
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
             if (!$request->isJson()) {
                 return response()->json(
-                    [
-                        'error' => 'Body should be a JSON object',
-                    ],
+                    ['error' => 'Body should be a JSON object'],
                     'CLIENT_ERROR_BAD_REQUEST'
                 );
             }
@@ -32,9 +30,7 @@ class JSONMiddleware
 
             if ((JSON_ERROR_NONE !== json_last_error())) {
                 return response()->json(
-                    [
-                        'error' => 'Problems parsing JSON',
-                    ],
+                    ['error' => 'Problems parsing JSON'],
                     'CLIENT_ERROR_BAD_REQUEST'
                 );
             }

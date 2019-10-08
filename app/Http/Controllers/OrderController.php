@@ -18,7 +18,7 @@ class OrderController extends Controller
      *
      * @return JsonResponse
      */
-    public function new(Request $request)
+    public function create(Request $request)
     {
         $this->validateCreate($request);
 

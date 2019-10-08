@@ -20,24 +20,31 @@ class ProductsController extends Controller
     {
         $products = Product::all();
 
-        return response()->json($products, 'SUCCESS_OK');
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $products
+        );
     }
 
     /**
-     * View product (multiple can be requested with comma's).
+     * View product
+     * Multiple can be requested with comma's.
+     * e.g. /products/1,2.
      *
-     * @param string
-     * @param mixed $id
+     * @param string $id
      *
      * @return JsonResponse
      */
     public function show($id)
     {
         $ids = array_map('intval', explode(',', $id));
+        $products = Product::findOrFail($ids);
 
-        return response()->json(
-            Product::findOrFail($ids),
-            'SUCCESS_OK'
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $products
         );
     }
 
@@ -58,12 +65,12 @@ class ProductsController extends Controller
             'img_url' => $request->get('img_url'),
             'price' => $request->get('price'),
             'subject' => $request->get('subject'),
-            'recommended_addons' => $request->get('recommended_addons'),
         ]);
 
-        return response()->json(
-            $product,
-            'SUCCESS_CREATED'
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $product
         );
     }
 
@@ -87,14 +94,14 @@ class ProductsController extends Controller
             'img_url' => $request->get('img_url', $product->img_url),
             'price' => $request->get('price', $product->price),
             'subject' => $request->get('subject', $product->subject),
-            'recommended_addons' => $request->get('recommended_addons', $product->recommended_addons),
         ]);
 
         $product->save();
 
-        return response()->json(
-            $product,
-            'SUCCESS_OK'
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $product
         );
     }
 
@@ -109,9 +116,9 @@ class ProductsController extends Controller
     {
         Product::findOrFail($id)->delete();
 
-        return response()->json(
-            null,
-            'SUCCESS_NO_CONTENT'
+        return $this->respondSuccess(
+            'product deleted',
+            'SUCCESS_OK'
         );
     }
 }

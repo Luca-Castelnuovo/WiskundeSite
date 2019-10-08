@@ -36,20 +36,20 @@ $router->group(['middleware' => 'auth'], function () use ($router) {
     $router->delete('account/sessions', 'AccountsController@revoke');
 
     // Products
-    // $router->get('products', 'ProductsController@index');
-    // $router->get('products/{id:[0-9,]+}', 'ProductsController@show');
-    // $router->post('products', 'ProductsController@create');
-    // $router->put('products/{id:[0-9]+}', 'ProductsController@update');
-    // $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
+    $router->get('products', 'ProductsController@index');
+    $router->get('products/{id:[0-9,]+}', 'ProductsController@show');
+    $router->post('products', 'ProductsController@create');
+    $router->put('products/{id:[0-9]+}', 'ProductsController@update');
+    $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
 
     // Subjects
-    // $router->get('subjects', 'SubjectsController@index');
-    // $router->get('subjects/{id:[0-9,]+}', 'SubjectsController@show');
-    // $router->get('subjects/{id:[0-9,]+}/products', 'SubjectsController@showProducts');
-    // $router->post('subjects', 'SubjectsController@create');
-    // $router->put('subjects/{id:[0-9]+}', 'SubjectsController@update');
-    // $router->delete('subjects/{id:[0-9]+}', 'SubjectsController@delete');
+    $router->get('subjects', 'SubjectsController@index');
+    $router->get('subjects/{id:[0-9,]+}', 'SubjectsController@show');
+    $router->get('subjects/{id:[0-9,]+}/products', 'SubjectsController@showProducts');
+    $router->post('subjects', 'SubjectsController@create');
+    $router->put('subjects/{id:[0-9]+}', 'SubjectsController@update');
+    $router->delete('subjects/{id:[0-9]+}', 'SubjectsController@delete');
 
     // Order
-    $router->post('order', 'OrderController@new');
+    $router->post('order', 'OrderController@create');
 });

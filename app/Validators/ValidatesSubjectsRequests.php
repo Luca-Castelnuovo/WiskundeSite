@@ -15,7 +15,6 @@ trait ValidatesSubjectsRequests
     {
         $this->validate($request, [
             'name' => 'required|max:255|alpha|unique:subjects,name',
-            'color' => 'required|max:255|alpha_num',
         ]);
     }
 
@@ -35,7 +34,6 @@ trait ValidatesSubjectsRequests
 
         $this->validate($request, [
             'name' => $name_rule,
-            'color' => 'sometimes|max:255|alpha_num',
         ]);
     }
 }
