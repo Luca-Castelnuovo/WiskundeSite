@@ -34,8 +34,8 @@ class JWTMiddleware
             );
         }
 
-        $request->user = User::findOrFail($credentials->sub);
         $request->refresh_session = Session::findOrFail($credentials->session_uuid);
+        $request->user = User::findOrFail($credentials->sub);
 
         return $next($request);
     }

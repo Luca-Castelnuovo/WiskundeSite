@@ -91,13 +91,7 @@ class AuthController extends Controller
 
         $refresh_token = $request->get('refresh_token');
 
-        $session = Session::find($request->get('session_uuid'));
-        if (!$session) {
-            return $this->respondError(
-                'session not found',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
+        $session = Session::findOrFail($request->get('session_uuid'));
 
         if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
             return $this->respondError(
@@ -159,16 +153,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $session = $request->refresh_session;
-
-        if (!$session || $session->user_id !== $request->user->id) {
-            return $this->respondError(
-                'session not found',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $session->delete();
+        $request->refresh_session->delete();
 
         return $this->respondSuccess(
             'logout successful',

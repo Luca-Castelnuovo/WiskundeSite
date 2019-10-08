@@ -2,372 +2,142 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CaptchaHelper;
-use App\Helpers\JWTHelper;
-use App\Mail\RegisterConfirmationMail;
-use App\Mail\RequestResetPasswordMail;
-use App\Models\Session;
 use App\Models\User;
-use App\Validators\ValidatesAuthRequests;
-use Exception;
+use App\Validators\ValidatesAccountsRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
-class AuthController extends Controller
+class AccountsController extends Controller
 {
-    use ValidatesAuthRequests;
+    use ValidatesAccountsRequests;
 
     /**
-     * Authenticate User,
-     * Returns access_token and refresh_token.
+     * View user.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function login(Request $request)
+    public function index(Request $request)
     {
-        $this->validateLogin($request);
-
-        $user = User::where('email', $request->get('email'))->first();
-
-        if (!$user || !Hash::check($request->get('password'), $user->password)) {
-            return $this->respondError(
-                'email or password is invalid',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        if ($user->verify_email_token) {
-            return $this->respondError(
-                'account not active',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $session = new Session();
-
-        $refresh_token = Str::random(config('tokens.refresh_token.length'));
-        $session->user_id = $user->id;
-        $session->refresh_token_hash = Hash::make($refresh_token);
-        $session->refresh_token_expires = time() + config('tokens.refresh_token.ttl');
-
-        $session->save();
-
-        $access_token = $access_token = JWTHelper::create(
-            'auth',
-            config('tokens.access_token.ttl'),
-            [
-                'sub' => $session->user_id,
-                'session_uuid' => $session->id,
-                'role' => 'student',
-            ]
-        );
+        $user = User::findOrFail($request->user_id);
 
         return $this->respondSuccess(
-            'login successful',
+            '',
             'SUCCESS_OK',
-            [
-                'access_token' => $access_token,
-                'refresh_token' => $refresh_token,
-            ]
-        );
-    }
-
-    /**
-     * Refresh access_token
-     * Returns access_token and refresh_token.
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse
-     */
-    public function refresh(Request $request)
-    {
-        $this->validateRefresh($request);
-
-        $refresh_token = $request->get('refresh_token');
-
-        $session = Session::find($request->get('session_uuid'));
-        if (!$session) {
-            return $this->respondError(
-                'session not found',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
-            return $this->respondError(
-                'session invalid',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        if ($session->refresh_token_expires->isPast()) {
-            return $this->respondError(
-                'session expired',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        if (Hash::check($refresh_token, $session->refresh_token_hash_old)) {
-            $session->delete();
-
-            return $this->respondError(
-                'token theft detected',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $new_refresh_token = Str::random(config('tokens.refresh_token.length'));
-        $session->refresh_token_hash_old = $session->refresh_token_hash;
-        $session->refresh_token_hash = Hash::make($new_refresh_token);
-        $session->refresh_token_expires = time() + config('tokens.refresh_token.ttl');
-
-        $session->save();
-
-        $access_token = JWTHelper::create(
-            'auth',
-            config('tokens.access_token.ttl'),
-            [
-                'sub' => $session->user_id,
-                'session_uuid' => $session->id,
-                'role' => 'student',
-            ]
-        );
-
-        return $this->respondSuccess(
-            'session refreshed',
-            'SUCCESS_OK',
-            [
-                'access_token' => $access_token,
-                'refresh_token' => $new_refresh_token,
-            ]
-        );
-    }
-
-    /**
-     * Revoke refresh_token
-     * Returns 204.
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse
-     */
-    public function logout(Request $request)
-    {
-        $session = $request->refresh_session;
-
-        if (!$session || $session->user_id !== $request->user->id) {
-            return $this->respondError(
-                'session not found',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $session->delete();
-
-        return $this->respondSuccess(
-            'logout successful',
-            'SUCCESS_OK'
-        );
-    }
-
-    /**
-     * Register account
-     * Sends email
-     * Returns user model.
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse
-     */
-    public function register(Request $request)
-    {
-        $this->validateRegister($request);
-
-        if (!CaptchaHelper::validate($request->get('captcha_response'))) {
-            return $this->respondError(
-                'invalid captcha',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $user = User::create([
-            'name' => $request->get('name'),
-            'email' => $request->get('email'),
-            'password' => Hash::make($request->get('password')),
-        ]);
-
-        $verify_mail_token = Str::random(config('tokens.verify_mail_token.length'));
-        $verify_mail_token_JWT = JWTHelper::create(
-            'verify_email',
-            config('tokens.verify_mail_token.ttl'),
-            [
-                'sub' => $user->id,
-                'token' => $verify_mail_token,
-            ]
-        );
-
-        $user->verify_email_token = $verify_mail_token;
-        $user->save();
-
-        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
-
-        return $this->respondSuccess(
-            'registration successful',
-            'SUCCESS_CREATED',
             $user
         );
     }
 
     /**
-     * Request Reset
-     * Sends email
-     * Returns 204.
+     * Update user
+     * Returns updated user.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function requestResetPassword(Request $request)
+    public function update(Request $request)
     {
-        $this->validateRequestPasswordReset($request);
+        $user = User::findOrFail($request->user_id);
 
-        if (!CaptchaHelper::validate($request->get('captcha_response'))) {
-            return $this->respondError(
-                'invalid captcha',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
+        $this->validateUpdate($request, $user);
 
-        $user = User::where('email', $request->get('email'))->get();
+        $user->update([
+            'name' => $request->get('name', $user->name),
+            'email' => $request->get('email', $user->email),
+            'password' => $request->has('password') ? Hash::make($request->input('password')) : $user->password,
+        ]);
 
-        if (!$user) {
-            // Fake success
-            return $this->respondSuccess(
-                'reset requested',
-                'SUCCESS_OK'
-            );
-        }
-
-        $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
-        $reset_password_token_JWT = JWTHelper::create(
-            'reset_password',
-            config('tokens.reset_password_token.ttl'),
-            [
-                'sub' => $user->id,
-                'token' => $reset_password_token,
-            ]
-        );
-
-        $user->reset_password_token = $reset_password_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user, $reset_password_token_JWT));
+        // If user changes password revoke all refresh_tokens
+        if ($request->has('password')) {
+            Session::where('user_id', $user->id)->delete();
+        }
 
         return $this->respondSuccess(
-            'reset requested',
+            'account updated',
+            'SUCCESS_OK',
+            $user
+        );
+    }
+
+    /**
+     * Delete user
+     * Revokes all sessions.
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function delete(Request $request)
+    {
+        $user = User::findOrFail($request->user_id);
+
+        Session::where('user_id', $user->id)->delete();
+        // TODO: Send delete account email
+
+        $user->delete();
+
+        return $this->respondSuccess(
+            'account deleted',
             'SUCCESS_OK'
         );
     }
 
     /**
-     * Confirm Reset
-     * Returns 204.
+     * Show sessions.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function resetPassword(Request $request)
+    public function showSessions(Request $request)
     {
-        $this->validatePasswordReset($request);
-
-        $reset_password_token = $request->get('reset_password_token');
-
-        try {
-            $credentials = JWTHelper::decode($reset_password_token, 'reset_password');
-        } catch (Exception $error) {
-            return $this->respondError(
-                $error->getMessage(),
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $user = User::findOrFail($credentials->sub);
-
-        if (!$user->reset_password_token) {
-            return $this->respondError(
-                'password reset not active',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        if ($user->reset_password_token !== $credentials->token) {
-            return $this->respondError(
-                'invalid reset token',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        $user->password = Hash::make($request->get('password'));
-        $user->reset_password_token = null;
-        $user->save();
+        $user = User::findOrFail($request->user_id);
+        $refresh_tokens = $user->refreshTokens();
 
         return $this->respondSuccess(
-            'reset confirmed',
-            'SUCCESS_OK'
+            '',
+            'SUCCESS_OK',
+            $refresh_tokens->get()
         );
     }
 
     /**
-     * Verify email
-     * Returns 204.
+     * Revoke an session.
      *
      * @param Request $request
      *
      * @return JsonResponse
      */
-    public function verifyEmail(Request $request)
+    public function revoke(Request $request)
     {
-        $this->validateVerifyEmailToken($request);
+        $this->validateRevoke($request);
 
-        $verify_email_token = $request->get('verify_email_token');
+        $revokable_session_uuid = $request->get('session_uuid');
+        $revokable_session = Session::findOrFail($revokable_session_uuid);
 
-        try {
-            $credentials = JWTHelper::decode($verify_email_token, 'verify_email');
-        } catch (Exception $error) {
+        if ($revokable_session_uuid === $request->refresh_session->id) {
             return $this->respondError(
-                $error->getMessage(),
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $user = User::findOrFail($credentials->sub);
-
-        if (!$user->verify_email_token) {
-            return $this->respondError(
-                'email already activated',
+                'can\'t revoke current session',
                 'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
-        if ($user->verify_email_token !== $credentials->token) {
+        if ($revokable_session->user_id !== $request->user_id) {
             return $this->respondError(
-                'invalid verification token',
+                'session not found',
                 'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
-        $user->verify_email_token = null;
-        $user->save();
+        $revokable_session->delete();
 
         return $this->respondSuccess(
-            'verification successfull',
+            'session_revoked',
             'SUCCESS_OK'
         );
     }
