@@ -3,22 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
 use Laravel\Lumen\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
     private $status_codes = [
         'SUCCESS_OK' => 200,
-        'SUCCESS_CREATED',
-        'SUCCESS_NO_CONTENT',
-        'CLIENT_ERROR_BAD_REQUEST',
-        'CLIENT_ERROR_UNAUTHORIZED',
-        'CLIENT_ERROR_FORBIDDEN',
-        'CLIENT_ERROR_NOT_FOUND',
-        'METHOD_NOT_ALLOWED',
-        'CLIENT_ERROR_CONFLICT',
-        'CLIENT_ERROR_UNPROCESSABLE_ENTITY',
+        'SUCCESS_CREATED' => 201,
+        'SUCCESS_NO_CONTENT' => 204,
+        'CLIENT_ERROR_BAD_REQUEST' => 400,
+        'CLIENT_ERROR_UNAUTHORIZED' => 401,
+        'CLIENT_ERROR_FORBIDDEN' => 403,
+        'CLIENT_ERROR_NOT_FOUND' => 404,
+        'METHOD_NOT_ALLOWED' => 405,
+        'CLIENT_ERROR_CONFLICT' => 409,
+        'CLIENT_ERROR_UNPROCESSABLE_ENTITY' => 422,
     ];
 
     /**
@@ -27,14 +26,19 @@ class Controller extends BaseController
      * @param array $data
      * @param int   $statusCode
      * @param array $headers
+     * @param mixed $statusMessage
      *
      * @return JsonResponse
      */
-    protected function respond($data, $statusCode, $headers = [])
+    protected function respond($statusCode, $statusMessage, $data = null, $headers = [])
     {
         $httpStatus = $this->status_codes[$statusCode];
 
-        return response($data, $httpStatus, $headers);
+        if ($data) {
+            $statusMessage = array_merge($statusMessage, $data);
+        }
+
+        return response($statusMessage, $httpStatus, $headers);
     }
 
     /**
@@ -48,9 +52,9 @@ class Controller extends BaseController
      */
     protected function respondSuccess($message, $statusCode, $additionalData = null)
     {
-        $data = Arr::collapse([['message' => $message], $additionalData]);
+        $data = ['message' => $message];
 
-        return $this->respond($data, $statusCode);
+        return $this->respond($statusCode, ['message' => $message], $additionalData);
     }
 
     /**
@@ -64,8 +68,8 @@ class Controller extends BaseController
      */
     protected function respondError($message, $statusCode, $additionalData = null)
     {
-        $data = Arr::collapse([['error' => $message], $additionalData]);
+        $data = ['error' => $message];
 
-        return $this->respond($data, $statusCode);
+        return $this->respond($statusCode, $data, $additionalData);
     }
 }

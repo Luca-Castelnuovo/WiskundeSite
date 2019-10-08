@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Session;
 use App\Models\User;
 use App\Validators\ValidatesAccountsRequests;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +27,7 @@ class AccountsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $user
+            $user->toArray()
         );
     }
 
@@ -52,15 +53,10 @@ class AccountsController extends Controller
 
         $user->save();
 
-        // If user changes password revoke all refresh_tokens
-        if ($request->has('password')) {
-            Session::where('user_id', $user->id)->delete();
-        }
-
         return $this->respondSuccess(
             'account updated',
             'SUCCESS_OK',
-            $user
+            $user->toArray()
         );
     }
 
@@ -98,11 +94,12 @@ class AccountsController extends Controller
     {
         $user = User::findOrFail($request->user_id);
         $refresh_tokens = $user->refreshTokens();
+        $refresh_tokens_output = $refresh_tokens->get()->toArray();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $refresh_tokens->get()
+            $refresh_tokens_output
         );
     }
 
