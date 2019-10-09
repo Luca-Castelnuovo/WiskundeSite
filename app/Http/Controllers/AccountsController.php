@@ -72,7 +72,7 @@ class AccountsController extends Controller
     {
         $user = User::findOrFail($request->user_id);
 
-        Session::where('user_id', $user->id)->delete();
+        Session::whereUser_id($user->id)->delete();
         // TODO: Send delete account email
 
         $user->delete();

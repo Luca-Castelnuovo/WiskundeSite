@@ -55,7 +55,7 @@ class SubjectsController extends Controller
      */
     public function showProducts($id)
     {
-        $products_with_subject = Product::where('subject', $id)->get();
+        $products_with_subject = Product::whereSubject($id)->get();
 
         return $this->respondSuccess(
             '',
