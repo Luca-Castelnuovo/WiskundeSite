@@ -32,7 +32,7 @@ class AuthController extends Controller
     {
         $this->validateLogin($request);
 
-        $user = User::where('email', $request->get('email'))->first();
+        $user = User::whereEmail($request->get('email'))->first();
 
         if (!$user || !Hash::check($request->get('password'), $user->password)) {
             return $this->respondError(
@@ -202,7 +202,7 @@ class AuthController extends Controller
         $user->verify_email_token = $verify_mail_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
+        // Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
 
         return $this->respondSuccess(
             'registration successful',
@@ -231,7 +231,7 @@ class AuthController extends Controller
             );
         }
 
-        $user = User::where('email', $request->get('email'))->get();
+        $user = User::whereEmail($request->get('email'))->get();
 
         if (!$user) {
             // Fake success
