@@ -87,11 +87,12 @@ class AuthController extends Controller
      */
     public function refresh(Request $request)
     {
-        $this->validateRefresh($request);
+        // $this->validateRefresh($request);
 
         $refresh_token = $request->get('refresh_token');
-
         $session = Session::findOrFail($request->get('session_uuid'));
+
+        dd(Hash::check($refresh_token, $session->refresh_token_hash));
 
         if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
             return $this->respondError(

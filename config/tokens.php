@@ -26,7 +26,7 @@ return [
     |
     */
     'refresh_token' => [
-        'length' => 256, // Indicates the amount of characters the token contains
+        'length' => 128, // Indicates the amount of characters the token contains
         'ttl' => 900, // Indicates how long the token is valid (15 minutes)
     ],
 
@@ -39,7 +39,7 @@ return [
     |
     */
     'verify_mail_token' => [
-        'length' => 256, // Indicates the amount of characters the token contains
+        'length' => 64, // Indicates the amount of characters the token contains
         'ttl' => 172800, // Indicates how long the token is valid (48 hour)
     ],
 
@@ -52,7 +52,7 @@ return [
     |
     */
     'reset_password_token' => [
-        'length' => 256, // Indicates the amount of characters the token contains
+        'length' => 64, // Indicates the amount of characters the token contains
         'ttl' => 3600, // Indicates how long the token is valid (1 hour)
     ],
 ];
