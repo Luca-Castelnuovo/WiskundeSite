@@ -53,14 +53,14 @@ class Handler extends ExceptionHandler
     {
         if ($exception instanceof ModelNotFoundException) {
             return response()->json(
-                ['error' => 'Not found'],
+                ['error' => 'model not found'],
                 404
             );
         }
 
         if ($exception instanceof NotFoundHttpException) {
             return response()->json(
-                ['error' => 'Not found'],
+                ['error' => 'endpoint not found'],
                 404
             );
         }
