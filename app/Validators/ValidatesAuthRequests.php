@@ -27,8 +27,7 @@ trait ValidatesAuthRequests
     protected function validateRefresh(Request $request)
     {
         $this->validate($request, [
-            'session_uuid' => 'required|size:36|alpha_dash',
-            'refresh_token' => 'required|size:128|alpha_num',
+            'refresh_token' => 'required',
         ]);
     }
 

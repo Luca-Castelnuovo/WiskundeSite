@@ -49,23 +49,11 @@ class AuthController extends Controller
         }
 
         $session = new Session();
-
-        $refresh_token = Str::random(config('tokens.refresh_token.length'));
         $session->user_id = $user->id;
-        $session->refresh_token_hash = Hash::make($refresh_token);
-        $session->refresh_token_expires = time() + config('tokens.refresh_token.ttl');
-
         $session->save();
 
-        $access_token = $access_token = JWTHelper::create(
-            'auth',
-            config('tokens.access_token.ttl'),
-            [
-                'sub' => $session->user_id,
-                'session_uuid' => $session->id,
-                'role' => 'student',
-            ]
-        );
+        $refresh_token = generate_refresh_token($session->id);
+        $access_token = generate_access_token($session->id, $session->user_id);
 
         return $this->respondSuccess(
             'login successful',
@@ -87,28 +75,13 @@ class AuthController extends Controller
      */
     public function refresh(Request $request)
     {
-        // $this->validateRefresh($request);
+        $this->validateRefresh($request);
 
         $refresh_token = $request->get('refresh_token');
-        $session = Session::findOrFail($request->get('session_uuid'));
+        $credentials = $this->decode_jwt($refresh_token, 'refresh');
+        $session = Session::findOrFail($credentials->sub);
 
-        dd(Hash::check($refresh_token, $session->refresh_token_hash));
-
-        if (!Hash::check($refresh_token, $session->refresh_token_hash)) {
-            return $this->respondError(
-                'session invalid',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        if ($session->refresh_token_expires->isPast()) {
-            return $this->respondError(
-                'session expired',
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        if (Hash::check($refresh_token, $session->refresh_token_hash_old)) {
+        if (Hash::check($refresh_token, $session->hash_old)) {
             $session->delete();
 
             return $this->respondError(
@@ -117,22 +90,11 @@ class AuthController extends Controller
             );
         }
 
-        $new_refresh_token = Str::random(config('tokens.refresh_token.length'));
-        $session->refresh_token_hash_old = $session->refresh_token_hash;
-        $session->refresh_token_hash = Hash::make($new_refresh_token);
-        $session->refresh_token_expires = time() + config('tokens.refresh_token.ttl');
-
+        $session->hash_old = Hash::make($refresh_token);
         $session->save();
 
-        $access_token = JWTHelper::create(
-            'auth',
-            config('tokens.access_token.ttl'),
-            [
-                'sub' => $session->user_id,
-                'session_uuid' => $session->id,
-                'role' => 'student',
-            ]
-        );
+        $new_refresh_token = generate_refresh_token($session->id);
+        $access_token = generate_access_token($session->id, $session->user_id);
 
         return $this->respondSuccess(
             'session refreshed',
@@ -154,9 +116,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $session = Session::findOrFail($request->session_uuid);
-
-        $session->delete();
+        Session::findOrFail($request->session_uuid)->delete();
 
         return $this->respondSuccess(
             'logout successful',
@@ -203,7 +163,7 @@ class AuthController extends Controller
         $user->verify_email_token = $verify_mail_token;
         $user->save();
 
-        // Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
+        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
 
         return $this->respondSuccess(
             'registration successful',
@@ -275,39 +235,16 @@ class AuthController extends Controller
     {
         $this->validatePasswordReset($request);
 
-        $reset_password_token = $request->get('reset_password_token');
-
-        try {
-            $credentials = JWTHelper::decode($reset_password_token, 'reset_password');
-        } catch (Exception $error) {
-            return $this->respondError(
-                $error->getMessage(),
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-
-        $user = User::findOrFail($credentials->sub);
-
-        if (!$user->reset_password_token) {
-            return $this->respondError(
-                'password reset not active',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        if ($user->reset_password_token !== $credentials->token) {
-            return $this->respondError(
-                'invalid reset token',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
+        $user = $this->verify_token(
+            $request->get('reset_password_token'),
+            'verify_email'
+        );
 
         $user->password = Hash::make($request->get('password'));
-        $user->reset_password_token = null;
         $user->save();
 
         return $this->respondSuccess(
-            'reset confirmed',
+            'reset sucessfull',
             'SUCCESS_OK'
         );
     }
@@ -324,39 +261,67 @@ class AuthController extends Controller
     {
         $this->validateVerifyEmailToken($request);
 
-        $verify_email_token = $request->get('verify_email_token');
+        $this->verify_token(
+            $request->get('verify_email_token'),
+            'verify_email'
+        );
 
+        return $this->respondSuccess(
+            'verification successfull',
+            'SUCCESS_OK'
+        );
+    }
+
+    protected function generate_access_token($session_uuid, $user_id, $role = 'student')
+    {
+        return JWTHelper::create(
+            'auth',
+            config('tokens.access_token.ttl'),
+            [
+                'sub' => $user_id,
+                'session_uuid' => $session_uuid,
+                'role' => $role,
+            ]
+        );
+    }
+
+    protected function generate_refresh_token($session_uuid)
+    {
+        return JWTHelper::create(
+            'refresh',
+            config('tokens.refresh_token.ttl'),
+            ['sub' => $session_uuid]
+        );
+    }
+
+    protected function decode_jwt($token, $type)
+    {
         try {
-            $credentials = JWTHelper::decode($verify_email_token, 'verify_email');
+            return JWTHelper::decode($token, $type);
         } catch (Exception $error) {
             return $this->respondError(
                 $error->getMessage(),
                 'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
+    }
 
+    protected function verify_token($token, $type)
+    {
+        $credentials = $this->decode_jwt($token, $type);
         $user = User::findOrFail($credentials->sub);
+        $db_column = $type.'_token';
 
-        if (!$user->verify_email_token) {
+        if (!$user->{$db_column} || $user->{$db_column} !== $credentials->token) {
             return $this->respondError(
-                'email already activated',
+                'token invalid',
                 'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
-        if ($user->verify_email_token !== $credentials->token) {
-            return $this->respondError(
-                'invalid verification token',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        $user->verify_email_token = null;
+        $user->{$db_column} = null;
         $user->save();
 
-        return $this->respondSuccess(
-            'verification successfull',
-            'SUCCESS_OK'
-        );
+        return $user;
     }
 }

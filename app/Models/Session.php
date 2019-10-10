@@ -23,9 +23,7 @@ class Session extends Model
      */
     protected $fillable = [
         'user_id',
-        'refresh_token_hash',
-        'refresh_token_hash_old',
-        'refresh_token_expires',
+        'hash_old',
     ];
 
     /**
@@ -36,7 +34,6 @@ class Session extends Model
     protected $dates = [
         'created_at',
         'updated_at',
-        'refresh_token_expires',
     ];
 
     /**
@@ -46,9 +43,7 @@ class Session extends Model
      */
     protected $hidden = [
         'user_id',
-        'updated_at',
-        'refresh_token_hash',
-        'refresh_token_hash_old',
+        'hash_old',
     ];
 
     /**
