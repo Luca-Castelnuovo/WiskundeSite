@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Subject;
+use App\Validators\ValidatesSubjectsRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,7 +24,7 @@ class SubjectsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $subjects
+            ['subjects' => $subjects]
         );
     }
 
@@ -42,7 +43,7 @@ class SubjectsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $subjects
+            ['subjects' => $subjects]
         );
     }
 
@@ -60,7 +61,7 @@ class SubjectsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $products_with_subject
+            ['products' => $products_with_subject]
         );
     }
 
@@ -76,13 +77,13 @@ class SubjectsController extends Controller
         $this->validateCreate($request);
 
         $subject = Subject::create([
-            'name' => $request->get('name', $request->get('name')),
+            'name' => $request->get('name'),
         ]);
 
         return $this->respondSuccess(
-            '',
+            'subject created',
             'SUCCESS_CREATED',
-            $subject
+            $subject->toArray()
         );
     }
 
@@ -108,9 +109,9 @@ class SubjectsController extends Controller
         $subject->save();
 
         return $this->respondSuccess(
-            '',
+            'subject updated',
             'SUCCESS_OK',
-            $subject
+            $subject->toArray()
         );
     }
 
