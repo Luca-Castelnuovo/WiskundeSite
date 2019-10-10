@@ -108,7 +108,7 @@ class AccountsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $refresh_tokens_output
+            ['sessions' => $refresh_tokens_output]
         );
     }
 
@@ -143,7 +143,7 @@ class AccountsController extends Controller
         $revokable_session->delete();
 
         return $this->respondSuccess(
-            'session_revoked',
+            'session revoked',
             'SUCCESS_OK'
         );
     }

@@ -23,7 +23,7 @@ class ProductsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $products
+            ['products' => $products]
         );
     }
 
@@ -44,7 +44,7 @@ class ProductsController extends Controller
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            $products
+            ['products' => $products]
         );
     }
 
@@ -61,16 +61,15 @@ class ProductsController extends Controller
 
         $product = Product::create([
             'name' => $request->get('name'),
-            'description' => $request->get('description'),
             'img_url' => $request->get('img_url'),
             'price' => $request->get('price'),
             'subject' => $request->get('subject'),
         ]);
 
         return $this->respondSuccess(
-            '',
+            'product created',
             'SUCCESS_OK',
-            $product
+            $product->toArray()
         );
     }
 
@@ -90,7 +89,6 @@ class ProductsController extends Controller
 
         $product->update([
             'name' => $request->get('name', $product->name),
-            'description' => $request->get('description', $product->description),
             'img_url' => $request->get('img_url', $product->img_url),
             'price' => $request->get('price', $product->price),
             'subject' => $request->get('subject', $product->subject),
@@ -99,9 +97,9 @@ class ProductsController extends Controller
         $product->save();
 
         return $this->respondSuccess(
-            '',
+            'product updated',
             'SUCCESS_OK',
-            $product
+            $product->toArray()
         );
     }
 
