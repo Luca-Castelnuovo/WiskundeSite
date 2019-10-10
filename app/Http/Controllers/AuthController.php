@@ -273,6 +273,15 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Generate access_token.
+     *
+     * @param string $session_uuid
+     * @param int    $user_id
+     * @param string $role
+     *
+     * @return string;
+     */
     protected function generate_access_token($session_uuid, $user_id, $role = 'student')
     {
         return JWTHelper::create(
@@ -286,6 +295,13 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Generate refresh_token.
+     *
+     * @param string $session_uuid
+     *
+     * @return string
+     */
     protected function generate_refresh_token($session_uuid)
     {
         return JWTHelper::create(
@@ -295,6 +311,14 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Genereate email verification token.
+     *
+     * @param int    $user_id
+     * @param string $token
+     *
+     * @return string
+     */
     protected function generate_email_token($user_id, $token)
     {
         return JWTHelper::create(
@@ -307,6 +331,14 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Generate password reset token.
+     *
+     * @param int    $user_id
+     * @param string $token
+     *
+     * @return string
+     */
     protected function generate_reset_token($user_id, $token)
     {
         return JWTHelper::create(
@@ -319,6 +351,14 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Decode JWT.
+     *
+     * @param string $token
+     * @param string $type
+     *
+     * @return object
+     */
     protected function decode_jwt($token, $type)
     {
         try {
@@ -331,6 +371,14 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Helper verification functions.
+     *
+     * @param string $token
+     * @param string $type
+     *
+     * @return User $user
+     */
     protected function verify_token($token, $type)
     {
         $credentials = $this->decode_jwt($token, $type);
