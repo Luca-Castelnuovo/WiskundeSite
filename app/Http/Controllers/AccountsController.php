@@ -14,15 +14,23 @@ class AccountsController extends Controller
     use ValidatesAccountsRequests;
 
     /**
-     * View user.
+     * Add Request to class.
      *
      * @param Request $request
+     */
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * View user.
      *
      * @return JsonResponse
      */
-    public function index(Request $request)
+    public function index()
     {
-        $user = User::findOrFail($request->user_id);
+        $user = $this->user();
 
         return $this->respondSuccess(
             '',
@@ -41,7 +49,7 @@ class AccountsController extends Controller
      */
     public function update(Request $request)
     {
-        $user = User::findOrFail($request->user_id);
+        $user = $this->user();
 
         $this->validateUpdate($request, $user);
 
@@ -70,7 +78,7 @@ class AccountsController extends Controller
      */
     public function delete(Request $request)
     {
-        $user = User::findOrFail($request->user_id);
+        $user = $this->user();
 
         Session::whereUser_id($user->id)->delete();
         // TODO: Send delete account email
@@ -92,7 +100,7 @@ class AccountsController extends Controller
      */
     public function showSessions(Request $request)
     {
-        $user = User::findOrFail($request->user_id);
+        $user = $this->user();
         $refresh_tokens = $user->refreshTokens();
         $refresh_tokens_output = $refresh_tokens->get()->toArray();
 
@@ -137,5 +145,15 @@ class AccountsController extends Controller
             'session_revoked',
             'SUCCESS_OK'
         );
+    }
+
+    /**
+     * Get user from JWT.
+     *
+     * @return User
+     */
+    protected function user()
+    {
+        return User::findOrFail($this->request->user_id);
     }
 }

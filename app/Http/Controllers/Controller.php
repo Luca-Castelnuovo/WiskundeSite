@@ -54,7 +54,7 @@ class Controller extends BaseController
     {
         $data = ['message' => $message];
 
-        return $this->respond($statusCode, ['message' => $message], $additionalData);
+        return $this->respond($statusCode, $data, $additionalData);
     }
 
     /**
