@@ -52,8 +52,11 @@ class AuthController extends Controller
         $session->user_id = $user->id;
         $session->save();
 
-        $refresh_token = generate_refresh_token($session->id);
-        $access_token = generate_access_token($session->id, $session->user_id);
+        $refresh_token = $this->generate_refresh_token($session->id);
+        $access_token = $this->generate_access_token(
+            $session->id,
+            $session->user_id
+        );
 
         return $this->respondSuccess(
             'login successful',
@@ -93,8 +96,11 @@ class AuthController extends Controller
         $session->hash_old = Hash::make($refresh_token);
         $session->save();
 
-        $new_refresh_token = generate_refresh_token($session->id);
-        $access_token = generate_access_token($session->id, $session->user_id);
+        $new_refresh_token = $this->generate_refresh_token($session->id);
+        $access_token = $this->generate_access_token(
+            $session->id,
+            $session->user_id
+        );
 
         return $this->respondSuccess(
             'session refreshed',
@@ -151,19 +157,18 @@ class AuthController extends Controller
         ]);
 
         $verify_mail_token = Str::random(config('tokens.verify_mail_token.length'));
-        $verify_mail_token_JWT = JWTHelper::create(
-            'verify_email',
-            config('tokens.verify_mail_token.ttl'),
-            [
-                'sub' => $user->id,
-                'token' => $verify_mail_token,
-            ]
+        $verify_mail_token_JWT = $this->generate_email_token(
+            $user->id,
+            $verify_mail_token
         );
 
         $user->verify_email_token = $verify_mail_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RegisterConfirmationMail($user, $verify_mail_token_JWT));
+        Mail::to($request->get('email'))->send(new RegisterConfirmationMail(
+            $user,
+            $verify_mail_token_JWT
+        ));
 
         return $this->respondSuccess(
             'registration successful',
@@ -203,13 +208,9 @@ class AuthController extends Controller
         }
 
         $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
-        $reset_password_token_JWT = JWTHelper::create(
-            'reset_password',
-            config('tokens.reset_password_token.ttl'),
-            [
-                'sub' => $user->id,
-                'token' => $reset_password_token,
-            ]
+        $reset_password_token_JWT = $this->generate_reset_token(
+            $user->id,
+            $reset_password_token
         );
 
         $user->reset_password_token = $reset_password_token;
@@ -291,6 +292,30 @@ class AuthController extends Controller
             'refresh',
             config('tokens.refresh_token.ttl'),
             ['sub' => $session_uuid]
+        );
+    }
+
+    protected function generate_email_token($user_id, $token)
+    {
+        return JWTHelper::create(
+            'verify_email',
+            config('tokens.verify_mail_token.ttl'),
+            [
+                'sub' => $user_id,
+                'token' => $token,
+            ]
+        );
+    }
+
+    protected function generate_reset_token($user_id, $token)
+    {
+        return JWTHelper::create(
+            'reset_password',
+            config('tokens.reset_password_token.ttl'),
+            [
+                'sub' => $user_id,
+                'token' => $token,
+            ]
         );
     }
 
