@@ -26,10 +26,7 @@ class AuthenticationMiddleware
         try {
             $credentials = JWTHelper::decode($access_token, 'auth');
         } catch (Exception $error) {
-            return response()->json(
-                ['error' => $error->getMessage()],
-                401 // TODO: 'CLIENT_ERROR_UNAUTHORIZED'
-            );
+            return response()->json(['error' => $error->getMessage()], 401);
         }
 
         $request->session_uuid = $credentials->session_uuid;

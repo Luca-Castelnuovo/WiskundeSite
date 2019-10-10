@@ -8,7 +8,7 @@ Your account has been deleted successfully.
 
 If you think this may be an error please contact us:
 
-@component('mail::button', ['url' => $contactUrl])
+@component('mail::button', ['url' => $contactURL])
 Contact
 @endcomponent
 

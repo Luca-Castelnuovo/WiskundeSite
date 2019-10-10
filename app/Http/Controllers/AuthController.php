@@ -47,7 +47,7 @@ class AuthController extends Controller
                 $user->verify_email_token
             );
 
-            Mail::to($request->get('email'))->send(new RegisterConfirmationMail(
+            Mail::to($user->email)->send(new RegisterConfirmationMail(
                 $user,
                 $verify_mail_token_JWT
             ));
@@ -184,7 +184,7 @@ class AuthController extends Controller
         $user->verify_email_token = $verify_mail_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RegisterConfirmationMail(
+        Mail::to($user->email)->send(new RegisterConfirmationMail(
             $user,
             $verify_mail_token_JWT
         ));
@@ -235,7 +235,7 @@ class AuthController extends Controller
         $user->reset_password_token = $reset_password_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RequestResetPasswordMail(
+        Mail::to($user->email)->send(new RequestResetPasswordMail(
             $user,
             $reset_password_token_JWT
         ));

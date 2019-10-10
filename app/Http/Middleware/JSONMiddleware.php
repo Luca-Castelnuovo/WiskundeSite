@@ -20,19 +20,13 @@ class JSONMiddleware
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
             if (!$request->isJson()) {
-                return response()->json(
-                    ['error' => 'Body should be a JSON object'],
-                    400 // TODO: 'CLIENT_ERROR_BAD_REQUEST'
-                );
+                return response()->json(['error' => 'Body should be a JSON object'], 400);
             }
 
             json_decode($request->getContent());
 
             if ((JSON_ERROR_NONE !== json_last_error())) {
-                return response()->json(
-                    ['error' => 'Problems parsing JSON'],
-                    400 // TODO: 'CLIENT_ERROR_BAD_REQUEST'
-                );
+                return response()->json(['error' => 'Problems parsing JSON'], 400);
             }
 
             $data = $request->json()->all();

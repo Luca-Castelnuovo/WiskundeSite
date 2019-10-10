@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DeleteAccountMail;
 use App\Models\Session;
 use App\Models\User;
 use App\Validators\ValidatesAccountsRequests;
@@ -81,7 +82,7 @@ class AccountsController extends Controller
         $user = $this->user();
 
         Session::whereUser_id($user->id)->delete();
-        // TODO: Send delete account email
+        Mail::to($user->email)->send(new DeleteAccountMail($user));
 
         $user->delete();
 
