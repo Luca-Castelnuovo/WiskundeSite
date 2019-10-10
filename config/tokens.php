@@ -26,8 +26,7 @@ return [
     |
     */
     'refresh_token' => [
-        'length' => 128, // Indicates the amount of characters the token contains
-        'ttl' => 900, // Indicates how long the token is valid (15 minutes)
+        'ttl' => 2592000, // Indicates how long the token is valid (30 days)
     ],
 
     /*
