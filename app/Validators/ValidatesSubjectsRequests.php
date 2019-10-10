@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 trait ValidatesSubjectsRequests
 {
     /**
-     * Validate creation of new product.
+     * Validate creation of new subject.
      *
      * @param Request $request
      */
@@ -20,7 +20,7 @@ trait ValidatesSubjectsRequests
     }
 
     /**
-     * Validate updating of existing product.
+     * Validate updating of existing subject.
      *
      * @param Request $request
      * @param Subject $subject
