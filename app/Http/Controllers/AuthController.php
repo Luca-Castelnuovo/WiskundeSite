@@ -208,7 +208,7 @@ class AuthController extends Controller
         return $this->respondSuccess(
             'registration successful',
             'SUCCESS_CREATED',
-            $user
+            $user->toArray()
         );
     }
 
