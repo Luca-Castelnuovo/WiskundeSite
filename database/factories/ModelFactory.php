@@ -26,6 +26,6 @@ $factory->define(App\Models\Product::class, function ($faker) {
         'name' => $faker->unique()->text(16),
         'img_url' => $faker->imageUrl(),
         'price' => $faker->randomFloat(2, 0.10, 3.50),
-        'subject' => 'Wiskunde B',
+        'subject_id' => 1,
     ];
 });

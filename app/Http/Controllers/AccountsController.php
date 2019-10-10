@@ -101,14 +101,12 @@ class AccountsController extends Controller
      */
     public function showSessions(Request $request)
     {
-        $user = $this->user();
-        $refresh_tokens = $user->sessions();
-        $refresh_tokens_output = $refresh_tokens->get()->toArray();
+        $refresh_tokens = $this->user()->sessions();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['sessions' => $refresh_tokens_output]
+            ['sessions' => $refresh_tokens->get()]
         );
     }
 

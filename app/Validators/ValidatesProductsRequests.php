@@ -18,7 +18,7 @@ trait ValidatesProductsRequests
             'name' => 'required|max:255|regex:/[a-zA-Z\h]+/|unique:products,name',
             'img_url' => 'sometimes|max:255|url',
             'price' => 'required|between:0,100|numeric',
-            'subject' => 'required|int|exists:subjects,id',
+            'subject_id' => 'required|int|exists:subjects,id',
         ]);
     }
 
@@ -40,7 +40,7 @@ trait ValidatesProductsRequests
             'name' => $name_rule,
             'img_url' => 'sometimes|max:255|url',
             'price' => 'sometimes|between:0,100|numeric',
-            'subject' => 'sometimes|int|exists:subjects,id',
+            'subject_id' => 'sometimes|int|exists:subjects,id',
         ]);
     }
 }

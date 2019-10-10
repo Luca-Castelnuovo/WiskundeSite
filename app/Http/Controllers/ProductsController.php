@@ -63,7 +63,7 @@ class ProductsController extends Controller
             'name' => $request->get('name'),
             'img_url' => $request->get('img_url'),
             'price' => $request->get('price'),
-            'subject' => $request->get('subject'),
+            'subject_id' => $request->get('subject_id'),
         ]);
 
         return $this->respondSuccess(
@@ -91,7 +91,7 @@ class ProductsController extends Controller
             'name' => $request->get('name', $product->name),
             'img_url' => $request->get('img_url', $product->img_url),
             'price' => $request->get('price', $product->price),
-            'subject' => $request->get('subject', $product->subject),
+            'subject_id' => $request->get('subject_id', $product->subject_id),
         ]);
 
         $product->save();

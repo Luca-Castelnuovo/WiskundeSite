@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Subject;
 use App\Validators\ValidatesSubjectsRequests;
 use Illuminate\Http\JsonResponse;
@@ -56,12 +55,12 @@ class SubjectsController extends Controller
      */
     public function showProducts($id)
     {
-        $products_with_subject = Product::whereSubject($id)->get();
+        $products = Subject::findOrFail($id)->products();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['products' => $products_with_subject]
+            ['products' => $products->get()]
         );
     }
 
