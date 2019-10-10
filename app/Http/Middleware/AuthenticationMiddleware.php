@@ -8,7 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class JWTMiddleware
+class AuthenticationMiddleware
 {
     /**
      * Validate JWT token.
@@ -34,6 +34,7 @@ class JWTMiddleware
 
         $request->session_uuid = $credentials->session_uuid;
         $request->user_id = $credentials->sub;
+        $request->role = $credentials->role;
 
         return $next($request);
     }

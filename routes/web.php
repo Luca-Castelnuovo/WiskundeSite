@@ -24,7 +24,7 @@ $router->post('auth/refresh', 'AuthController@refresh');
 $router->post('auth/reset/request', 'AuthController@requestResetPassword');
 $router->post('auth/reset', 'AuthController@resetPassword');
 
-$router->group(['middleware' => 'auth'], function () use ($router) {
+$router->group(['middleware' => 'authentication'], function () use ($router) {
     // Auth
     $router->post('auth/logout', 'AuthController@logout');
 

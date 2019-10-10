@@ -92,7 +92,8 @@ $app->middleware([
 ]);
 
 $app->routeMiddleware([
-    'auth' => App\Http\Middleware\JWTMiddleware::class,
+    'authentication' => App\Http\Middleware\AuthenticationMiddleware::class,
+    'authorizaton' => App\Http\Middleware\AuthorizationMiddleware::class,
 ]);
 
 /*
