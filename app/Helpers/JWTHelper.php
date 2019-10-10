@@ -21,7 +21,7 @@ class JWTHelper
     public static function create($type, $expires, $data)
     {
         $head = [
-            'iss' => config('tokens.access_token.iss'),
+            'iss' => config('tokens.jwt_token.iss'),
             'iat' => time(),
             'exp' => time() + $expires,
             'type' => $type,
@@ -31,8 +31,8 @@ class JWTHelper
 
         return JWT::encode(
             $payload,
-            config('tokens.access_token.private_key'),
-            config('tokens.access_token.algorithm')
+            config('tokens.jwt_token.private_key'),
+            config('tokens.jwt_token.algorithm')
         );
     }
 
@@ -53,8 +53,8 @@ class JWTHelper
         try {
             $credentials = JWT::decode(
                 $access_token,
-                config('tokens.access_token.public_key'),
-                [config('tokens.access_token.algorithm')]
+                config('tokens.jwt_token.public_key'),
+                [config('tokens.jwt_token.algorithm')]
             );
 
             if ($credentials->type !== $type) {
