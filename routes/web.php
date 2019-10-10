@@ -11,18 +11,19 @@
 |
 */
 
-/**
- * General.
- */
-$router->get('/', 'GeneralController@index');
+// Ratelimit (60 requests / 1 minute)
+$router->group(['middleware' => 'ratelimit:60,60'], function () use ($router) {
+    // General
+    $router->get('/', 'GeneralController@index');
 
-// Auth
-$router->post('auth/register', 'AuthController@register');
-$router->post('auth/verify', 'AuthController@verifyEmail');
-$router->post('auth/login', 'AuthController@login');
-$router->post('auth/refresh', 'AuthController@refresh');
-$router->post('auth/reset/request', 'AuthController@requestResetPassword');
-$router->post('auth/reset', 'AuthController@resetPassword');
+    // Auth
+    $router->post('auth/register', 'AuthController@register');
+    $router->post('auth/verify', 'AuthController@verifyEmail');
+    $router->post('auth/login', 'AuthController@login');
+    $router->post('auth/refresh', 'AuthController@refresh');
+    $router->post('auth/reset/request', 'AuthController@requestResetPassword');
+    $router->post('auth/reset', 'AuthController@resetPassword');
+});
 
 $router->group(['middleware' => 'authentication'], function () use ($router) {
     // Auth
