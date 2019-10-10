@@ -81,7 +81,16 @@ class AuthController extends Controller
         $this->validateRefresh($request);
 
         $refresh_token = $request->get('refresh_token');
-        $credentials = $this->decode_jwt($refresh_token, 'refresh');
+
+        try {
+            $credentials = JWTHelper::decode($refresh_token, 'refresh');
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_UNAUTHORIZED'
+            );
+        }
+
         $session = Session::findOrFail($credentials->sub);
 
         if (Hash::check($refresh_token, $session->hash_old)) {
@@ -236,10 +245,17 @@ class AuthController extends Controller
     {
         $this->validatePasswordReset($request);
 
-        $user = $this->verify_token(
-            $request->get('reset_password_token'),
-            'verify_email'
-        );
+        try {
+            $user = $this->verify_token(
+                $request->get('reset_password_token'),
+                'reset_password'
+            );
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_UNAUTHORIZED'
+            );
+        }
 
         $user->password = Hash::make($request->get('password'));
         $user->save();
@@ -262,10 +278,17 @@ class AuthController extends Controller
     {
         $this->validateVerifyEmailToken($request);
 
-        $this->verify_token(
-            $request->get('verify_email_token'),
-            'verify_email'
-        );
+        try {
+            $this->verify_token(
+                $request->get('verify_email_token'),
+                'verify_email'
+            );
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_UNAUTHORIZED'
+            );
+        }
 
         return $this->respondSuccess(
             'verification successfull',
@@ -352,27 +375,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Decode JWT.
-     *
-     * @param string $token
-     * @param string $type
-     *
-     * @return object
-     */
-    protected function decode_jwt($token, $type)
-    {
-        try {
-            return JWTHelper::decode($token, $type);
-        } catch (Exception $error) {
-            return $this->respondError(
-                $error->getMessage(),
-                'CLIENT_ERROR_UNAUTHORIZED'
-            );
-        }
-    }
-
-    /**
-     * Helper verification functions.
+     * Verification helper.
      *
      * @param string $token
      * @param string $type
@@ -381,15 +384,13 @@ class AuthController extends Controller
      */
     protected function verify_token($token, $type)
     {
-        $credentials = $this->decode_jwt($token, $type);
+        $credentials = JWTHelper::decode($token, $type);
         $user = User::findOrFail($credentials->sub);
+
         $db_column = $type.'_token';
 
-        if (!$user->{$db_column} || $user->{$db_column} !== $credentials->token) {
-            return $this->respondError(
-                'token invalid',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
+        if (!$user->{$db_column} && $user->{$db_column} !== $credentials->token) {
+            throw new Exception('token invalid');
         }
 
         $user->{$db_column} = null;
