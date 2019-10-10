@@ -34,4 +34,13 @@ class Subject extends Model
         'created_at',
         'updated_at',
     ];
+
+    /**
+     * Get all the refresh_tokens by the user.
+     */
+    public function products()
+    {
+        // subject column in product DB
+        return $this->hasMany(Product::class);
+    }
 }

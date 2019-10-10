@@ -38,4 +38,12 @@ class Product extends Model
         'created_at',
         'updated_at',
     ];
+
+    /**
+     * Define relationship.
+     */
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
 }
