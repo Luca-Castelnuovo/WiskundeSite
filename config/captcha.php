@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Private Key
@@ -33,5 +32,5 @@ return [
     |
     */
 
-    'endpoint' => 'https://www.google.com/recaptcha/api/siteverify'
+    'endpoint' => 'https://www.google.com/recaptcha/api/siteverify',
 ];

@@ -58,12 +58,12 @@ class JWTHelper
             );
 
             if ($credentials->type !== $type) {
-                throw new Exception('JWT type has invalid type');
+                throw new Exception('JWT errror: invalid type');
             }
         } catch (ExpiredException $error) {
-            throw new Exception('JWT has expired');
+            throw new Exception('JWT errror: Token has expired');
         } catch (Exception $error) {
-            throw new Exception('JWT is invalid');
+            throw new Exception('JWT error: Token is invalid');
         }
 
         return $credentials;

@@ -108,7 +108,6 @@ $app->routeMiddleware([
 
 $app->register(Illuminate\Mail\MailServiceProvider::class);
 $app->register(Mollie\Laravel\MollieServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------
