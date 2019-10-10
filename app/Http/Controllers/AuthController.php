@@ -42,6 +42,16 @@ class AuthController extends Controller
         }
 
         if ($user->verify_email_token) {
+            $verify_mail_token_JWT = $this->generate_email_token(
+                $user->id,
+                $user->verify_email_token
+            );
+
+            Mail::to($request->get('email'))->send(new RegisterConfirmationMail(
+                $user,
+                $verify_mail_token_JWT
+            ));
+
             return $this->respondError(
                 'account not active',
                 'CLIENT_ERROR_UNAUTHORIZED'
@@ -206,7 +216,7 @@ class AuthController extends Controller
             );
         }
 
-        $user = User::whereEmail($request->get('email'))->get();
+        $user = User::whereEmail($request->get('email'))->first();
 
         if (!$user) {
             // Fake success
@@ -225,7 +235,10 @@ class AuthController extends Controller
         $user->reset_password_token = $reset_password_token;
         $user->save();
 
-        Mail::to($request->get('email'))->send(new RequestResetPasswordMail($user, $reset_password_token_JWT));
+        Mail::to($request->get('email'))->send(new RequestResetPasswordMail(
+            $user,
+            $reset_password_token_JWT
+        ));
 
         return $this->respondSuccess(
             'reset requested',
