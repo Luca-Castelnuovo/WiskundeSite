@@ -93,7 +93,7 @@ $app->middleware([
 
 $app->routeMiddleware([
     'authentication' => App\Http\Middleware\AuthenticationMiddleware::class,
-    'authorizaton' => App\Http\Middleware\AuthorizationMiddleware::class,
+    'authorization' => App\Http\Middleware\AuthorizationMiddleware::class,
     'ratelimit' => App\Http\Middleware\RatelimitMiddleware::class,
 ]);
 
