@@ -6,6 +6,7 @@ use Exception;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class JWTHelper
 {
@@ -67,5 +68,15 @@ class JWTHelper
         }
 
         return $credentials;
+    }
+
+    /**
+     * Generate token.
+     *
+     * @return string
+     */
+    public static function generate_token()
+    {
+        return Str::random(config('tokens.jwt_token.length'));
     }
 }

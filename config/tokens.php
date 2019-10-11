@@ -4,6 +4,7 @@ return [
     'jwt_token' => [
         'algorithm' => 'RS256', // Indicates which algorithm is used to sign and encrypt the JWT
         'iss' => env('APP_URL'), // Indicates who issued the JWT
+        'length' => 64, // token length
         'public_key' => str_replace('||||', PHP_EOL, env('JWT_PUBLIC_KEY')), // Indicates the JWT public key
         'private_key' => str_replace('||||', PHP_EOL, env('JWT_PRIVATE_KEY')), // Indicates the JWT private key
     ],
@@ -16,13 +17,11 @@ return [
         'ttl' => 2592000, // 30 days
     ],
 
-    'verify_mail_token' => [
-        'length' => 64, // character amount
+    'verify_email_token' => [
         'ttl' => 172800, // 48 hour
     ],
 
     'reset_password_token' => [
-        'length' => 64, // character amount
         'ttl' => 3600, // 1 hour
     ],
 ];

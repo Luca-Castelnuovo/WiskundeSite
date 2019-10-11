@@ -13,8 +13,8 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('reset_password_token', config('tokens.reset_password_token.length'))->nullable()->unique();
-            $table->string('verify_email_token', config('tokens.verify_mail_token.length'))->nullable()->unique();
+            $table->string('reset_password_token', config('tokens.jwt_token.length'))->nullable()->unique();
+            $table->string('verify_email_token', config('tokens.jwt_token.length'))->nullable()->unique();
             $table->timestamps();
         });
     }

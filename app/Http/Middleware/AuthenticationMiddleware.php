@@ -24,12 +24,12 @@ class AuthenticationMiddleware
         $access_token = Str::replaceFirst('Bearer ', '', $authorization_header);
 
         try {
-            $credentials = JWTHelper::decode($access_token, 'auth');
+            $credentials = JWTHelper::decode($access_token, 'access');
         } catch (Exception $error) {
             return response()->json(['error' => $error->getMessage()], 401);
         }
 
-        $request->session_uuid = $credentials->session_uuid;
+        $request->session_uuid = $credentials->token;
         $request->user_id = $credentials->sub;
         $request->role = $credentials->role;
 

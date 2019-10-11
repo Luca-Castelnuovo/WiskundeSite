@@ -14,7 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -42,7 +41,8 @@ class AuthController extends Controller
         }
 
         if ($user->verify_email_token) {
-            $verify_mail_token_JWT = $this->generate_email_token(
+            $verify_mail_token_JWT = $this->generate_token(
+                'verify_email',
                 $user->id,
                 $user->verify_email_token
             );
@@ -59,13 +59,22 @@ class AuthController extends Controller
         }
 
         $session = new Session();
+
         $session->user_id = $user->id;
+        $session->token = JWTHelper::generate_token();
+
         $session->save();
 
-        $refresh_token = $this->generate_refresh_token($session->id);
-        $access_token = $this->generate_access_token(
+        $access_token = $this->generate_token(
+            'access',
+            $session->user_id,
             $session->id,
-            $session->user_id
+            ['role' => 'student']
+        );
+        $refresh_token = $this->generate_token(
+            'refresh',
+            $session->id,
+            $session->token
         );
 
         return $this->respondSuccess(
@@ -102,9 +111,8 @@ class AuthController extends Controller
         }
 
         $session = Session::findOrFail($credentials->sub);
-        $json_credentials = json_encode($credentials, JSON_UNESCAPED_SLASHES);
 
-        if (Hash::check($json_credentials, $session->credentials_hash_old)) {
+        if (!Hash::check($credentials->token, $session->token_hash)) {
             $session->delete();
 
             return $this->respondError(
@@ -112,13 +120,20 @@ class AuthController extends Controller
                 'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
-        $session->credentials_hash_old = Hash::make($json_credentials);
+
+        $session->token = JWTHelper::generate_token();
         $session->save();
 
-        $new_refresh_token = $this->generate_refresh_token($session->id);
-        $access_token = $this->generate_access_token(
+        $access_token = $this->generate_token(
+            'access',
+            $session->user_id,
             $session->id,
-            $session->user_id
+            ['role' => 'student']
+        );
+        $refresh_token = $this->generate_token(
+            'refresh',
+            $session->id,
+            $session->token
         );
 
         return $this->respondSuccess(
@@ -126,7 +141,7 @@ class AuthController extends Controller
             'SUCCESS_OK',
             [
                 'access_token' => $access_token,
-                'refresh_token' => $new_refresh_token,
+                'refresh_token' => $refresh_token,
             ]
         );
     }
@@ -175,8 +190,9 @@ class AuthController extends Controller
             'password' => Hash::make($request->get('password')),
         ]);
 
-        $verify_mail_token = Str::random(config('tokens.verify_mail_token.length'));
-        $verify_mail_token_JWT = $this->generate_email_token(
+        $verify_mail_token = JWTHelper::generate_token();
+        $verify_mail_token_JWT = $this->generate_token(
+            'verify_email',
             $user->id,
             $verify_mail_token
         );
@@ -226,7 +242,7 @@ class AuthController extends Controller
             );
         }
 
-        $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
+        $reset_password_token = JWTHelper::generate_token();
         $reset_password_token_JWT = JWTHelper::create(
             'reset_password',
             config('tokens.reset_password_token.ttl'),
@@ -314,61 +330,26 @@ class AuthController extends Controller
     }
 
     /**
-     * Generate access_token.
+     * Generate JWT's.
      *
-     * @param string $session_uuid
-     * @param int    $user_id
-     * @param string $role
-     *
-     * @return string;
-     */
-    protected function generate_access_token($session_uuid, $user_id, $role = 'student')
-    {
-        return JWTHelper::create(
-            'auth',
-            config('tokens.access_token.ttl'),
-            [
-                'sub' => $user_id,
-                'session_uuid' => $session_uuid,
-                'role' => $role,
-            ]
-        );
-    }
-
-    /**
-     * Generate refresh_token.
-     *
-     * @param string $session_uuid
-     *
-     * @return string
-     */
-    protected function generate_refresh_token($session_uuid)
-    {
-        return JWTHelper::create(
-            'refresh',
-            config('tokens.refresh_token.ttl'),
-            ['sub' => $session_uuid]
-        );
-    }
-
-    /**
-     * Genereate email verification token.
-     *
-     * @param int    $user_id
+     * @param string $type
+     * @param string $sub
      * @param string $token
+     * @param array  $additional_data
      *
      * @return string
      */
-    protected function generate_email_token($user_id, $token)
+    private function generate_token($type, $sub, $token, $additional_data = null)
     {
-        return JWTHelper::create(
-            'verify_email',
-            config('tokens.verify_mail_token.ttl'),
-            [
-                'sub' => $user_id,
-                'token' => $token,
-            ]
-        );
+        $data = [
+            'sub' => $sub,
+            'token' => $token,
+            $additional_data,
+        ];
+
+        $ttl = config("tokens.{$type}_token.ttl");
+
+        return JWTHelper::create($type, $ttl, $data);
     }
 
     /**
@@ -379,7 +360,7 @@ class AuthController extends Controller
      *
      * @return User $user
      */
-    protected function verify_token($token, $type)
+    private function verify_token($token, $type)
     {
         $credentials = JWTHelper::decode($token, $type);
         $user = User::findOrFail($credentials->sub);
