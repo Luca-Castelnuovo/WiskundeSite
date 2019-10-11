@@ -344,8 +344,11 @@ class AuthController extends Controller
         $data = [
             'sub' => $sub,
             'token' => $token,
-            $additional_data,
         ];
+
+        if ($additional_data) {
+            $data = $data + $additional_data;
+        }
 
         $ttl = config("tokens.{$type}_token.ttl");
 
