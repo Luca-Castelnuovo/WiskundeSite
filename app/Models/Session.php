@@ -23,7 +23,7 @@ class Session extends Model
      */
     protected $fillable = [
         'user_id',
-        'hash_old',
+        'credentials_hash_old',
     ];
 
     /**
@@ -43,7 +43,7 @@ class Session extends Model
      */
     protected $hidden = [
         'user_id',
-        'hash_old',
+        'credentials_hash_old',
     ];
 
     /**

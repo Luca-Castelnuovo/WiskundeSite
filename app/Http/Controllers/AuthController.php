@@ -90,10 +90,10 @@ class AuthController extends Controller
     {
         $this->validateRefresh($request);
 
-        $refresh_token = $request->get('refresh_token');
+        $refresh_JWT = $request->get('refresh_token');
 
         try {
-            $credentials = JWTHelper::decode($refresh_token, 'refresh');
+            $credentials = JWTHelper::decode($refresh_JWT, 'refresh');
         } catch (Exception $error) {
             return $this->respondError(
                 $error->getMessage(),
@@ -102,8 +102,9 @@ class AuthController extends Controller
         }
 
         $session = Session::findOrFail($credentials->sub);
+        $json_credentials = json_encode($credentials, JSON_UNESCAPED_SLASHES);
 
-        if (Hash::check($refresh_token, $session->hash_old)) {
+        if (Hash::check($json_credentials, $session->credentials_hash_old)) {
             $session->delete();
 
             return $this->respondError(
@@ -111,8 +112,7 @@ class AuthController extends Controller
                 'CLIENT_ERROR_UNAUTHORIZED'
             );
         }
-
-        $session->hash_old = Hash::make($refresh_token);
+        $session->credentials_hash_old = Hash::make($json_credentials);
         $session->save();
 
         $new_refresh_token = $this->generate_refresh_token($session->id);
@@ -227,9 +227,13 @@ class AuthController extends Controller
         }
 
         $reset_password_token = Str::random(config('tokens.reset_password_token.length'));
-        $reset_password_token_JWT = $this->generate_reset_token(
-            $user->id,
-            $reset_password_token
+        $reset_password_token_JWT = JWTHelper::create(
+            'reset_password',
+            config('tokens.reset_password_token.ttl'),
+            [
+                'sub' => $user->id,
+                'token' => $reset_password_token,
+            ]
         );
 
         $user->reset_password_token = $reset_password_token;
@@ -368,26 +372,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Generate password reset token.
-     *
-     * @param int    $user_id
-     * @param string $token
-     *
-     * @return string
-     */
-    protected function generate_reset_token($user_id, $token)
-    {
-        return JWTHelper::create(
-            'reset_password',
-            config('tokens.reset_password_token.ttl'),
-            [
-                'sub' => $user_id,
-                'token' => $token,
-            ]
-        );
-    }
-
-    /**
      * Verification helper.
      *
      * @param string $token
@@ -402,7 +386,7 @@ class AuthController extends Controller
 
         $db_column = $type.'_token';
 
-        if (!$user->{$db_column} && $user->{$db_column} !== $credentials->token) {
+        if (!$user->{$db_column} || $user->{$db_column} !== $credentials->token) {
             throw new Exception('token invalid');
         }
 
