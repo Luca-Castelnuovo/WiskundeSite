@@ -17,6 +17,7 @@ class Product extends Model
         'subject',
         'class',
         'method',
+        'fileKey',
     ];
 
     /**

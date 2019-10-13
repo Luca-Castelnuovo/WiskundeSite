@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\UtilsHelper;
 use App\Models\Product;
 use App\Validators\ValidatesProductsRequests;
 use Illuminate\Http\JsonResponse;
@@ -28,7 +29,7 @@ class ProductsController extends Controller
     }
 
     /**
-     * View product.
+     * Show product info.
      *
      * @param string $id
      *
@@ -46,6 +47,35 @@ class ProductsController extends Controller
     }
 
     /**
+     * View product file.
+     *
+     * @param string $id
+     *
+     * @return JsonResponse
+     */
+    public function view($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $s3 = app('aws')->createClient('s3');
+
+        $cmd = $s3->getCommand('GetObject', [
+            'Bucket' => config('services.s3.bucket'),
+            'Key' => $product->fileKey,
+        ]);
+
+        $expires = time() + config('services.s3.url_ttl');
+
+        $request = $s3->createPresignedRequest($cmd, $expires);
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            ['url' => $request->getUri()]
+        );
+    }
+
+    /**
      * Create product.
      *
      * @param Request $request
@@ -56,8 +86,16 @@ class ProductsController extends Controller
     {
         $this->validateCreate($request);
 
-        // get file
-        // upload to S3
+        $s3 = app('aws')->createClient('s3');
+        $fileKey = UtilsHelper::generateRandomToken();
+
+        $result = $s3->putObject([
+            'Bucket' => config('services.s3.bucket'),
+            'Key' => $fileKey,
+            'SourceFile' => '/Users/LucaCastelnuovo/Desktop/Scheikunde.pdf',
+        ]);
+
+        dd($result);
 
         $product = Product::create([
             'name' => $request->get('name'),
@@ -65,6 +103,7 @@ class ProductsController extends Controller
             'subject' => $request->get('subject'),
             'class' => $request->get('class'),
             'method' => $request->get('method'),
+            'fileKey' => $fileKey,
         ]);
 
         return $this->respondSuccess(

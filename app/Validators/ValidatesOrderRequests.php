@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 trait ValidatesOrderRequests
 {
     /**
-     * Validate creation of new order
+     * Validate creation of new order.
      *
-     * @param  Request $request
+     * @param Request $request
      */
     protected function validateCreate(Request $request)
     {
         $this->validate($request, [
-            'item'  => 'required',
+            'products' => 'required|array',
         ]);
     }
 }
