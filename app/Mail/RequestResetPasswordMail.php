@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 class RequestResetPasswordMail extends Mailable
 {
     public $user;
-	public $reset_password_token;
+    public $reset_password_token;
 
     /**
      * Create a new message instance.
@@ -34,7 +34,7 @@ class RequestResetPasswordMail extends Mailable
         return $this->markdown(
             'mail.RequestResetPassword',
             [
-                'resetPasswordUrl' => config('app.domain') . '/auth/reset/' . $this->reset_password_token
+                'resetPasswordUrl' => config('app.domain') . '/auth/reset/' . $this->reset_password_token,
             ]
         );
     }

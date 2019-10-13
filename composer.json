@@ -1,8 +1,11 @@
 {
     "name": "luca-castelnuovo/wiskunde-site",
     "description": "WiskundeSite",
-    "keywords": ["wiskundesite", "wiskunde"],
-    "license": "",
+    "keywords": [
+        "wiskundesite",
+        "wiskunde"
+    ],
+    "license": "proprietary",
     "type": "project",
     "require": {
         "php": "^7.2",
@@ -18,8 +21,9 @@
     },
     "require-dev": {
         "fzaninotto/faker": "^1.4",
-        "phpunit/phpunit": "^8.0",
-        "mockery/mockery": "^1.0"
+        "mockery/mockery": "^1.0",
+        "nunomaduro/phpinsights": "^1.9",
+        "phpunit/phpunit": "^8.0"
     },
     "autoload": {
         "classmap": [

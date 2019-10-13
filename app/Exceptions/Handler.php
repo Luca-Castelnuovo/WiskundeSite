@@ -36,10 +36,10 @@ class Handler extends ExceptionHandler
      *
      * @throws Exception
      */
-    public function report(Exception $exception)
-    {
-        parent::report($exception);
-    }
+    // public function report(Exception $exception)
+    // {
+    //     parent::report($exception);
+    // }
 
     /**
      * Render an exception into an HTTP response.

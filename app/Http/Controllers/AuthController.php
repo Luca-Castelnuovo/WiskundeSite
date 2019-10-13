@@ -41,7 +41,7 @@ class AuthController extends Controller
         }
 
         if ($user->verify_email_token) {
-            $verify_mail_token_JWT = $this->generate_token(
+            $verify_mail_token_JWT = $this->generateJWT(
                 'verify_email',
                 $user->id,
                 $user->verify_email_token
@@ -61,17 +61,17 @@ class AuthController extends Controller
         $session = new Session();
 
         $session->user_id = $user->id;
-        $session->token = JWTHelper::generate_token();
+        $session->token = JWTHelper::generateRandomToken();
 
         $session->save();
 
-        $access_token = $this->generate_token(
+        $access_token = $this->generateJWT(
             'access',
             $session->user_id,
             $session->id,
             ['role' => 'student']
         );
-        $refresh_token = $this->generate_token(
+        $refresh_token = $this->generateJWT(
             'refresh',
             $session->id,
             $session->token
@@ -121,16 +121,16 @@ class AuthController extends Controller
             );
         }
 
-        $session->token = JWTHelper::generate_token();
+        $session->token = JWTHelper::generateRandomToken();
         $session->save();
 
-        $access_token = $this->generate_token(
+        $access_token = $this->generateJWT(
             'access',
             $session->user_id,
             $session->id,
             ['role' => 'student']
         );
-        $refresh_token = $this->generate_token(
+        $refresh_token = $this->generateJWT(
             'refresh',
             $session->id,
             $session->token
@@ -190,8 +190,8 @@ class AuthController extends Controller
             'password' => Hash::make($request->get('password')),
         ]);
 
-        $verify_mail_token = JWTHelper::generate_token();
-        $verify_mail_token_JWT = $this->generate_token(
+        $verify_mail_token = JWTHelper::generateRandomToken();
+        $verify_mail_token_JWT = $this->generateJWT(
             'verify_email',
             $user->id,
             $verify_mail_token
@@ -242,7 +242,7 @@ class AuthController extends Controller
             );
         }
 
-        $reset_password_token = JWTHelper::generate_token();
+        $reset_password_token = JWTHelper::generateRandomToken();
         $reset_password_token_JWT = JWTHelper::create(
             'reset_password',
             config('tokens.reset_password_token.ttl'),
@@ -279,7 +279,7 @@ class AuthController extends Controller
         $this->validatePasswordReset($request);
 
         try {
-            $user = $this->verify_token(
+            $user = $this->verifyJWT(
                 $request->get('reset_password_token'),
                 'reset_password'
             );
@@ -312,7 +312,7 @@ class AuthController extends Controller
         $this->validateVerifyEmailToken($request);
 
         try {
-            $this->verify_token(
+            $this->verifyJWT(
                 $request->get('verify_email_token'),
                 'verify_email'
             );
@@ -339,7 +339,7 @@ class AuthController extends Controller
      *
      * @return string
      */
-    private function generate_token($type, $sub, $token, $additional_data = null)
+    private function generateJWT($type, $sub, $token, $additional_data = null)
     {
         $data = [
             'sub' => $sub,
@@ -347,7 +347,7 @@ class AuthController extends Controller
         ];
 
         if ($additional_data) {
-            $data = $data + $additional_data;
+            $data += $additional_data;
         }
 
         $ttl = config("tokens.{$type}_token.ttl");
@@ -363,12 +363,12 @@ class AuthController extends Controller
      *
      * @return User $user
      */
-    private function verify_token($token, $type)
+    private function verifyJWT($token, $type)
     {
         $credentials = JWTHelper::decode($token, $type);
         $user = User::findOrFail($credentials->sub);
 
-        $db_column = $type.'_token';
+        $db_column = $type . '_token';
 
         if (!$user->{$db_column} || $user->{$db_column} !== $credentials->token) {
             throw new Exception('token invalid');

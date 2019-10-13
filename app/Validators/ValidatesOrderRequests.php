@@ -14,7 +14,7 @@ trait ValidatesOrderRequests
     protected function validateCreate(Request $request)
     {
         $this->validate($request, [
-            'item'  => 'required'
+            'item'  => 'required',
         ]);
     }
 }

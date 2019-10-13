@@ -65,10 +65,10 @@ class RatelimitMiddleware
     protected function resolveRequestSignature(Request $request)
     {
         return sha1(
-            $request->method().
-            '|'.$request->server('SERVER_NAME').
-            '|'.$request->path().
-            '|'.$request->ip()
+            $request->method() .
+                '|' . $request->server('SERVER_NAME') .
+                '|' . $request->path() .
+                '|' . $request->ip()
         );
     }
 
@@ -101,7 +101,7 @@ class RatelimitMiddleware
      * @param \Symfony\Component\HttpFoundation\Response $response
      * @param int                                        $maxAttempts
      * @param int                                        $remainingAttempts
-     * @param null|int                                   $retryAfter
+     * @param int|null                                   $retryAfter
      *
      * @return Response
      */
@@ -126,7 +126,7 @@ class RatelimitMiddleware
      *
      * @param string   $key
      * @param int      $maxAttempts
-     * @param null|int $retryAfter
+     * @param int|null $retryAfter
      *
      * @return int
      */

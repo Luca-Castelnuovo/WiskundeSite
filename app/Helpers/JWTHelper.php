@@ -75,7 +75,7 @@ class JWTHelper
      *
      * @return string
      */
-    public static function generate_token()
+    public static function generateRandomToken()
     {
         return Str::random(config('tokens.jwt_token.length'));
     }

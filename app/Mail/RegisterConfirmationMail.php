@@ -5,11 +5,10 @@ namespace App\Mail;
 use App\Models\User;
 use Illuminate\Mail\Mailable;
 
-
 class RegisterConfirmationMail extends Mailable
 {
     public $user;
-	public $verify_mail_token;
+    public $verify_mail_token;
 
     /**
      * Create a new message instance.
@@ -35,7 +34,7 @@ class RegisterConfirmationMail extends Mailable
         return $this->markdown(
             'mail.RegisterConfirmation',
             [
-                'verifyEmailUrl' => config('app.domain') . '/auth/verify/' . $this->verify_mail_token
+                'verifyEmailUrl' => config('app.domain') . '/auth/verify/' . $this->verify_mail_token,
             ]
         );
     }

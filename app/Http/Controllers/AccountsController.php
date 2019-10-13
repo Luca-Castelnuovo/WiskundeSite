@@ -73,11 +73,9 @@ class AccountsController extends Controller
      * Delete user
      * Revokes all sessions.
      *
-     * @param Request $request
-     *
      * @return JsonResponse
      */
-    public function delete(Request $request)
+    public function delete()
     {
         $user = $this->user();
 
@@ -95,11 +93,9 @@ class AccountsController extends Controller
     /**
      * Show sessions.
      *
-     * @param Request $request
-     *
      * @return JsonResponse
      */
-    public function showSessions(Request $request)
+    public function showSessions()
     {
         $refresh_tokens = $this->user()->sessions();
 

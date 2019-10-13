@@ -22,16 +22,6 @@ class JWTGenerateCommand extends Command
     protected $description = 'Generate new JWT key pair.';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Execute the console command.
      *
      * @return mixed
@@ -63,11 +53,15 @@ class JWTGenerateCommand extends Command
         $this->info("JWT keypair set successfully. (bit size: {$bits})");
 
         file_put_contents($path, str_replace(
-            'JWT_PRIVATE_KEY="' . env('JWT_PRIVATE_KEY') . '"', 'JWT_PRIVATE_KEY="' . str_replace(["\r","\n"],'||',$key['privatekey']) . '"', file_get_contents($path)
+            'JWT_PRIVATE_KEY="' . env('JWT_PRIVATE_KEY') . '"',
+            'JWT_PRIVATE_KEY="' . str_replace(["\r", "\n"], '||', $key['privatekey']) . '"',
+            file_get_contents($path)
         ));
 
         file_put_contents($path, str_replace(
-            'JWT_PUBLIC_KEY="' . env('JWT_PUBLIC_KEY') . '"', 'JWT_PUBLIC_KEY="' . str_replace(["\r","\n"],'||',$key['publickey']) . '"', file_get_contents($path)
+            'JWT_PUBLIC_KEY="' . env('JWT_PUBLIC_KEY') . '"',
+            'JWT_PUBLIC_KEY="' . str_replace(["\r", "\n"], '||', $key['publickey']) . '"',
+            file_get_contents($path)
         ));
 
         return;

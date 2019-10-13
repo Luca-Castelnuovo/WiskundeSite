@@ -40,6 +40,7 @@ $app->configure('CORS');
 $app->configure('mail');
 $app->configure('services');
 $app->configure('tokens');
+$app->configure('insights');
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +111,7 @@ $app->routeMiddleware([
 
 $app->register(Illuminate\Mail\MailServiceProvider::class);
 $app->register(Mollie\Laravel\MollieServiceProvider::class);
+$app->register(\NunoMaduro\PhpInsights\Application\Adapters\Laravel\InsightsServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------
