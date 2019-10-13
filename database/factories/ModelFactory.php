@@ -29,5 +29,6 @@ $factory->define(App\Models\Product::class, function ($faker) {
         'subject' => 'Wiskunde B',
         'class' => '5vwo',
         'method' => 'Getal en Ruimte',
+        'fileKey' => $faker->sha1(),
     ];
 });

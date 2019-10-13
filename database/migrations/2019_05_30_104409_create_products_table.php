@@ -18,6 +18,7 @@ class CreateProductsTable extends Migration
             $table->string('subject');
             $table->string('class');
             $table->string('method');
+            $table->string('fileKey');
             $table->timestamps();
         });
     }
