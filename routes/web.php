@@ -38,24 +38,19 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Products
     $router->get('products', 'ProductsController@index');
-    $router->post('products', 'ProductsController@create');
-    $router->group(['prefix' => 'products/{id:[0-9,]+}'], function ($router) {
-        $router->get('/', 'ProductsController@show');
-        $router->put('/', 'ProductsController@update');
-        $router->delete('/', 'ProductsController@delete');
+    $router->get('products/{id:[0-9]+}', 'ProductsController@show');
+
+    $router->group(['middleware' => 'authorization:teacher.admin'], function () use ($router) {
+        $router->post('products', 'ProductsController@create');
+        $router->put('products/{id:[0-9]+}', 'ProductsController@update');
+        $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
     });
 
-    // Subjects
-    $router->get('subjects', 'SubjectsController@index');
-    $router->post('subjects', 'SubjectsController@create');
-    $router->group(['prefix' => 'subjects/{id:[0-9,]+}'], function ($router) {
-        $router->get('/', 'SubjectsController@show');
-        $router->put('/', 'SubjectsController@update');
-        $router->delete('/', 'SubjectsController@delete');
-
-        $router->get('/products', 'SubjectsController@showProducts');
-    });
+    // Filter
+    // $router->get('filter', 'FilterController@index');
 
     // Order
-    $router->post('order', 'OrderController@create');
+    $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
+        $router->post('order', 'OrderController@create');
+    });
 });
