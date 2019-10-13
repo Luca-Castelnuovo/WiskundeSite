@@ -15,6 +15,7 @@ class User extends Model
         'name',
         'email',
         'password',
+        'role',
         'reset_password_token',
         'verify_email_token',
     ];

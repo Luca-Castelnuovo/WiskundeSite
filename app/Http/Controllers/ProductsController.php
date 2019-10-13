@@ -56,9 +56,11 @@ class ProductsController extends Controller
     {
         $this->validateCreate($request);
 
+        // get file
+        // upload to S3
+
         $product = Product::create([
             'name' => $request->get('name'),
-            'img_url' => $request->get('img_url'),
             'price' => $request->get('price'),
             'subject' => $request->get('subject'),
             'class' => $request->get('class'),

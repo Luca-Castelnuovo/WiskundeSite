@@ -67,9 +67,9 @@ class AuthController extends Controller
 
         $access_token = $this->generateJWT(
             'access',
-            $session->user_id,
+            $user->id,
             $session->id,
-            ['role' => 'student']
+            ['role' => $user->role]
         );
         $refresh_token = $this->generateJWT(
             'refresh',
@@ -111,6 +111,7 @@ class AuthController extends Controller
         }
 
         $session = Session::findOrFail($credentials->sub);
+        $user = User::findOrFail($credentials->user_id);
 
         if (!Hash::check($credentials->token, $session->token_hash)) {
             $session->delete();
@@ -126,9 +127,9 @@ class AuthController extends Controller
 
         $access_token = $this->generateJWT(
             'access',
-            $session->user_id,
+            $user->id,
             $session->id,
-            ['role' => 'student']
+            ['role' => $user->role]
         );
         $refresh_token = $this->generateJWT(
             'refresh',
@@ -368,7 +369,7 @@ class AuthController extends Controller
         $credentials = JWTHelper::decode($token, $type);
         $user = User::findOrFail($credentials->sub);
 
-        $db_column = $type . '_token';
+        $db_column = $type.'_token';
 
         if (!$user->{$db_column} || $user->{$db_column} !== $credentials->token) {
             throw new Exception('token invalid');

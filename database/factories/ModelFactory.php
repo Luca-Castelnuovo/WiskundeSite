@@ -17,6 +17,7 @@ $factory->define(App\Models\User::class, function ($faker) {
         'name' => $faker->name,
         'email' => $faker->unique()->safeEmail,
         'password' => app('hash')->make('test'),
+        'role' => 'student',
     ];
 });
 
