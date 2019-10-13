@@ -16,7 +16,7 @@ $factory->define(App\Models\User::class, function ($faker) {
     return [
         'name' => $faker->name,
         'email' => $faker->unique()->safeEmail,
-        'password' => app('hash')->make('test'),
+        'password' => app('hash')->make('fooBar1234'),
         'role' => 'student',
     ];
 });
@@ -24,7 +24,7 @@ $factory->define(App\Models\User::class, function ($faker) {
 // Factory definition for model App\Models\Product.
 $factory->define(App\Models\Product::class, function ($faker) {
     return [
-        'name' => 'Oefentoets Hoofstuk 9',
+        'name' => 'Oefentoets '.$faker->unique()->word(),
         'price' => $faker->randomFloat(2, 0.10, 3.50),
         'subject' => 'Wiskunde B',
         'class' => '5vwo',
