@@ -14,9 +14,10 @@ class Product extends Model
     protected $fillable = [
         'name',
         'description',
-        'img_url',
         'price',
-        'subject_id',
+        'subject',
+        'class',
+        'method',
     ];
 
     /**
@@ -36,14 +37,5 @@ class Product extends Model
      */
     protected $hidden = [
         'created_at',
-        'updated_at',
     ];
-
-    /**
-     * Define relationship.
-     */
-    public function subject()
-    {
-        return $this->belongsTo(Subject::class);
-    }
 }

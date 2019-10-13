@@ -23,9 +23,10 @@ $factory->define(App\Models\User::class, function ($faker) {
 // Factory definition for model App\Models\Product.
 $factory->define(App\Models\Product::class, function ($faker) {
     return [
-        'name' => $faker->unique()->text(16),
-        'img_url' => $faker->imageUrl(),
+        'name' => 'Oefentoets Hoofstuk 9',
         'price' => $faker->randomFloat(2, 0.10, 3.50),
-        'subject_id' => 1,
+        'subject' => 'Wiskunde B',
+        'class' => '5vwo',
+        'method' => 'Getal en Ruimte',
     ];
 });

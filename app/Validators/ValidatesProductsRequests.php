@@ -16,9 +16,10 @@ trait ValidatesProductsRequests
     {
         $this->validate($request, [
             'name' => 'required|max:255|regex:/[a-zA-Z\h]+/|unique:products,name',
-            'img_url' => 'sometimes|max:255|url',
             'price' => 'required|between:0,100|numeric',
-            'subject_id' => 'required|int|exists:subjects,id',
+            'subject' => 'required|max:255|string',
+            'class' => 'required|max:255|string',
+            'method' => 'required|max:255|string',
         ]);
     }
 
@@ -38,9 +39,10 @@ trait ValidatesProductsRequests
 
         $this->validate($request, [
             'name' => $name_rule,
-            'img_url' => 'sometimes|max:255|url',
             'price' => 'sometimes|between:0,100|numeric',
-            'subject_id' => 'sometimes|int|exists:subjects,id',
+            'subject' => 'sometimes|max:255|string',
+            'class' => 'sometimes|max:255|string',
+            'method' => 'sometimes|max:255|string',
         ]);
     }
 }

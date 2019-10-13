@@ -28,9 +28,7 @@ class ProductsController extends Controller
     }
 
     /**
-     * View product
-     * Multiple can be requested with comma's.
-     * e.g. /products/1,2.
+     * View product.
      *
      * @param string $id
      *
@@ -38,13 +36,12 @@ class ProductsController extends Controller
      */
     public function show($id)
     {
-        $ids = array_map('intval', explode(',', $id));
-        $products = Product::findOrFail($ids);
+        $product = Product::findOrFail($id);
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['products' => $products]
+            $product->toArray()
         );
     }
 
@@ -63,7 +60,9 @@ class ProductsController extends Controller
             'name' => $request->get('name'),
             'img_url' => $request->get('img_url'),
             'price' => $request->get('price'),
-            'subject_id' => $request->get('subject_id'),
+            'subject' => $request->get('subject'),
+            'class' => $request->get('class'),
+            'method' => $request->get('method'),
         ]);
 
         return $this->respondSuccess(
@@ -91,7 +90,9 @@ class ProductsController extends Controller
             'name' => $request->get('name', $product->name),
             'img_url' => $request->get('img_url', $product->img_url),
             'price' => $request->get('price', $product->price),
-            'subject_id' => $request->get('subject_id', $product->subject_id),
+            'subject' => $request->get('subject', $product->subject),
+            'class' => $request->get('class', $product->class),
+            'method' => $request->get('method', $product->method),
         ]);
 
         $product->save();

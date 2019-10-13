@@ -14,9 +14,10 @@ class CreateProductsTable extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->unique();
-            $table->string('img_url')->nullable();
             $table->float('price');
-            $table->integer('subject_id');
+            $table->string('subject');
+            $table->string('class');
+            $table->string('method');
             $table->timestamps();
         });
     }
