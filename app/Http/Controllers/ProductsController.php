@@ -57,6 +57,8 @@ class ProductsController extends Controller
     {
         $product = Product::findOrFail($id);
 
+        // TODO: check user purchases if user can access this file
+
         $s3 = app('aws')->createClient('s3');
 
         $cmd = $s3->getCommand('GetObject', [
@@ -87,15 +89,17 @@ class ProductsController extends Controller
         $this->validateCreate($request);
 
         $s3 = app('aws')->createClient('s3');
-        $fileKey = UtilsHelper::generateRandomToken();
+        $fileKey = UtilsHelper::generateRandomToken().'.pdf';
+
+        $fileBase64 = $request->get('file');
+        $fileDecoded = base64_decode($fileBase64);
 
         $result = $s3->putObject([
             'Bucket' => config('services.s3.bucket'),
             'Key' => $fileKey,
-            'SourceFile' => '/Users/LucaCastelnuovo/Desktop/Scheikunde.pdf',
+            'Body' => $fileDecoded,
+            'ContentType' => 'application/pdf',
         ]);
-
-        dd($result);
 
         $product = Product::create([
             'name' => $request->get('name'),
