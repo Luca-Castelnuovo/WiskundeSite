@@ -8,13 +8,13 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
 use NunoMaduro\PhpInsights\Domain\Metrics\Architecture\Classes;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\TypeHintDeclarationSniff;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Preset
@@ -66,6 +66,7 @@ return [
         ForbiddenNormalClasses::class,
         ForbiddenTraits::class,
         TypeHintDeclarationSniff::class,
+        SpaceAfterNotSniff::class,
     ],
 
     'config' => [
@@ -73,5 +74,4 @@ return [
             'title' => 'The usage of private methods is not idiomatic in Laravel.',
         ],
     ],
-
 ];

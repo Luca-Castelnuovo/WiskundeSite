@@ -13,10 +13,8 @@ class RequestResetPasswordMail extends Mailable
     /**
      * Create a new message instance.
      *
-     * @param User $user
+     * @param User   $user
      * @param string $reset_password_token
-     *
-     * @return void
      */
     public function __construct($user, $reset_password_token)
     {
@@ -34,7 +32,7 @@ class RequestResetPasswordMail extends Mailable
         return $this->markdown(
             'mail.RequestResetPassword',
             [
-                'resetPasswordUrl' => config('app.domain') . '/auth/reset/' . $this->reset_password_token,
+                'resetPasswordUrl' => config('app.domain').'/auth/reset/'.$this->reset_password_token,
             ]
         );
     }

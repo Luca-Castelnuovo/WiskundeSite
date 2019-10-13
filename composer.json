@@ -42,7 +42,8 @@
     "scripts": {
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ]
+        ],
+        "insight": "php artisan insights --no-interaction --min-quality=95 --min-complexity=80 --min-architecture=90 --min-style=95"
     },
     "config": {
         "preferred-install": "dist",
