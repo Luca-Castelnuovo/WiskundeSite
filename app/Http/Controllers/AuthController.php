@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\CaptchaHelper;
 use App\Helpers\JWTHelper;
+use App\Helpers\UtilsHelper;
 use App\Mail\RegisterConfirmationMail;
 use App\Mail\RequestResetPasswordMail;
 use App\Models\Session;
@@ -61,7 +62,7 @@ class AuthController extends Controller
         $session = new Session();
 
         $session->user_id = $user->id;
-        $session->token = JWTHelper::generateRandomToken();
+        $session->token = UtilsHelper::generateRandomToken();
 
         $session->save();
 
@@ -123,7 +124,7 @@ class AuthController extends Controller
             );
         }
 
-        $session->token = JWTHelper::generateRandomToken();
+        $session->token = UtilsHelper::generateRandomToken();
         $session->save();
 
         $access_token = $this->generateJWT(
@@ -192,7 +193,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->get('password')),
         ]);
 
-        $verify_mail_token = JWTHelper::generateRandomToken();
+        $verify_mail_token = UtilsHelper::generateRandomToken();
         $verify_mail_token_JWT = $this->generateJWT(
             'verify_email',
             $user->id,
@@ -244,7 +245,7 @@ class AuthController extends Controller
             );
         }
 
-        $reset_password_token = JWTHelper::generateRandomToken();
+        $reset_password_token = UtilsHelper::generateRandomToken();
         $reset_password_token_JWT = JWTHelper::create(
             'reset_password',
             config('tokens.reset_password_token.ttl'),
