@@ -49,4 +49,12 @@ class User extends Model
     {
         return $this->hasMany(Session::class);
     }
+
+    /**
+     * Get all the orders by the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

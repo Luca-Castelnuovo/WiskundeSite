@@ -114,7 +114,6 @@ class AuthController extends Controller
         $session = Session::findOrFail($credentials->sub);
         $user = User::findOrFail($session->user_id);
 
-        // if (!Hash::check($credentials->token, $session->token_hash)) {
         if ($credentials->token !== $session->token) {
             $session->delete();
 

@@ -7,16 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     /**
-     * The attributes that are mass assignable
+     * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
         'items',
+        'user_id',
+        'payment_id',
     ];
 
     /**
-     * The fields that will be transformed by Carbon
+     * The fields that will be transformed by Carbon.
      *
      * @var array
      */
@@ -32,6 +34,13 @@ class Order extends Model
      */
     protected $hidden = [
         'created_at',
-        'updated_at',
     ];
+
+    /**
+     * Define relationship.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

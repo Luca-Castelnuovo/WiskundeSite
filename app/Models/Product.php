@@ -37,5 +37,6 @@ class Product extends Model
      */
     protected $hidden = [
         'created_at',
+        'fileKey',
     ];
 }

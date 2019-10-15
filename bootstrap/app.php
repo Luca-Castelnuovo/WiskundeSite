@@ -41,6 +41,7 @@ $app->configure('mail');
 $app->configure('services');
 $app->configure('tokens');
 $app->configure('insights');
+$app->configure('mollie');
 
 /*
 |--------------------------------------------------------------------------

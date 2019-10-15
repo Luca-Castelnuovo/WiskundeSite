@@ -47,17 +47,17 @@ class ProductsController extends Controller
     }
 
     /**
-     * View product file.
+     * Open product pdf.
      *
      * @param string $id
      *
      * @return JsonResponse
      */
-    public function view($id)
+    public function open($id)
     {
         $product = Product::findOrFail($id);
 
-        // TODO: check user purchases if user can access this file
+        // TODO: check orders for user_id and product_id, when found query mollie for payment status
 
         $s3 = app('aws')->createClient('s3');
 
@@ -67,13 +67,13 @@ class ProductsController extends Controller
         ]);
 
         $expires = time() + config('services.s3.url_ttl');
-
         $request = $s3->createPresignedRequest($cmd, $expires);
+        $signedURL = (string) $request->getUri();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['url' => $request->getUri()]
+            ['url' => $signedURL]
         );
     }
 
@@ -86,15 +86,15 @@ class ProductsController extends Controller
      */
     public function create(Request $request)
     {
-        $this->validateCreate($request);
+        $this->validateCreate($this->request);
 
         $s3 = app('aws')->createClient('s3');
         $fileKey = UtilsHelper::generateRandomToken().'.pdf';
 
-        $fileBase64 = $request->get('file');
+        $fileBase64 = $this->request->get('file');
         $fileDecoded = base64_decode($fileBase64);
 
-        $result = $s3->putObject([
+        $s3->putObject([
             'Bucket' => config('services.s3.bucket'),
             'Key' => $fileKey,
             'Body' => $fileDecoded,
@@ -158,7 +158,15 @@ class ProductsController extends Controller
      */
     public function delete($id)
     {
-        Product::findOrFail($id)->delete();
+        $product = Product::findOrFail($id);
+
+        $s3 = app('aws')->createClient('s3');
+        $s3->deleteObject([
+            'Bucket' => config('services.s3.bucket'),
+            'Key' => $product->fileKey,
+        ]);
+
+        $product->delete();
 
         return $this->respondSuccess(
             'product deleted',

@@ -17,4 +17,16 @@ trait ValidatesOrderRequests
             'products' => 'required|array',
         ]);
     }
+
+    /**
+     * Validate webhook.
+     *
+     * @param Request $request
+     */
+    protected function validateWebhook(Request $request)
+    {
+        $this->validate($request, [
+            'id' => 'required|integer',
+        ]);
+    }
 }

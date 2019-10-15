@@ -23,6 +23,11 @@ $router->group(['middleware' => 'ratelimit:60,60'], function () use ($router) {
     $router->post('auth/refresh', 'AuthController@refresh');
     $router->post('auth/reset/request', 'AuthController@requestResetPassword');
     $router->post('auth/reset', 'AuthController@resetPassword');
+
+    // Order
+    $router->post('order/webhook', [
+        'as' => 'mollie_webhook', 'uses' => 'OrderController@webhook',
+    ]);
 });
 
 $router->group(['middleware' => 'authentication'], function () use ($router) {
@@ -39,6 +44,7 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     // Products
     $router->get('products', 'ProductsController@index');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
+    $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
 
     $router->group(['middleware' => 'authorization:teacher.admin'], function () use ($router) {
         $router->post('products', 'ProductsController@create');
@@ -46,11 +52,12 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
         $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
     });
 
-    // Filter
-    // $router->get('filter', 'FilterController@index');
-
     // Order
     $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
+        $router->get('order', 'OrderController@show');
         $router->post('order', 'OrderController@create');
     });
+
+    // Filter
+    // $router->get('filter', 'FilterController@index');
 });
