@@ -14,21 +14,9 @@
 // Factory definition for model App\Models\User.
 $factory->define(App\Models\User::class, function ($faker) {
     return [
-        'name' => $faker->name,
-        'email' => $faker->unique()->safeEmail,
+        'name' => 'fooBar',
+        'email' => 'ltcastelnuovo@gmail.com',
         'password' => app('hash')->make('fooBar1234'),
-        'role' => 'student',
-    ];
-});
-
-// Factory definition for model App\Models\Product.
-$factory->define(App\Models\Product::class, function ($faker) {
-    return [
-        'name' => 'Oefentoets '.$faker->unique()->word(),
-        'price' => $faker->randomFloat(2, 0.10, 3.50),
-        'subject' => 'Wiskunde B',
-        'class' => '5vwo',
-        'method' => 'Getal en Ruimte',
-        'fileKey' => $faker->sha1(),
+        'role' => '*',
     ];
 });

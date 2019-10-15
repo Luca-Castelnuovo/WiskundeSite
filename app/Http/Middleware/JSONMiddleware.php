@@ -19,6 +19,10 @@ class JSONMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
+            if ('order/webhook' === $request->path()) {
+                return $next($request);
+            }
+
             if (!$request->isJson()) {
                 return response()->json(['error' => 'Body should be a JSON object'], 400);
             }
