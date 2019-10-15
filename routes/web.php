@@ -54,7 +54,7 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Order
     $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
-        $router->get('order/{id}', 'OrderController@status');
+        $router->get('order/{id:[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}}', 'OrderController@status');
         $router->post('order', 'OrderController@create');
     });
 
