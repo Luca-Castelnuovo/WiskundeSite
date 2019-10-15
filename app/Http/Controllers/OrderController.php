@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Validators\ValidatesOrderRequests;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Mollie\Laravel\Facades\Mollie;
@@ -11,6 +13,32 @@ use Mollie\Laravel\Facades\Mollie;
 class OrderController extends Controller
 {
     use ValidatesOrderRequests;
+
+    /**
+     * Show order.
+     *
+     * @param Request $request
+     * @param int     $id
+     *
+     * @return JsonResponse
+     */
+    public function status(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+
+        if ($order->user_id !== $request->user_id) {
+            return $this->respondError(
+                'model not found',
+                'CLIENT_ERROR_NOT_FOUND'
+            );
+        }
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            $order->toArray()
+        );
+    }
 
     /**
      * Create order.
@@ -23,46 +51,41 @@ class OrderController extends Controller
     {
         $this->validateCreate($request);
 
-        $value = '10.00';
+        $product_ids = $request->get('products');
+        $products = Product::findOrFail($product_ids);
+
+        $price = $products->sum('price');
+        $priceString = number_format($price, 2, '.', '');
+        $description = 'test'.time(); // TODO: dynamically set these
+        $redirectURL = 'https://google.com'; // TODO: set url for front-end
+        $webhookURL = 'https://wiskundesite.free.beeceptor.com'; // TODO: route('mollie_webhook')
 
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => config('mollie.currency'),
-                'value' => $value,
+                'value' => $priceString,
             ],
-            'description' => 'My first API payment',
-            'redirectUrl' => config('mollie.redirectUrl'),
-            'webhookUrl' => config('mollie.webhookUrl'),
+            'description' => $description,
+            'redirectUrl' => $redirectURL,
+            'webhookUrl' => $webhookURL,
+        ]);
+        $order = Order::create([
+            'products' => $product_ids,
+            'price' => $price,
+            'user_id' => $request->user_id,
+            'payment_id' => $payment->id,
+            'state' => 'open',
         ]);
 
-        $payment = $this->getPayment($request->id);
-
-        // TODO: insert into order model
+        $payment = $this->getPayment($payment->id);
 
         return $this->respondSuccess(
             'order initialised',
             'SUCCESS_OK',
             [
-                'link' => $payment->getCheckoutUrl(),
+                'order_id' => $order->id,
+                'payment_url' => $payment->getCheckoutUrl(),
             ]
-        );
-    }
-
-    /**
-     * Show order.
-     *
-     * @param int $id
-     *
-     * @return JsonResponse
-     */
-    public function show($id)
-    {
-        $order = Order::findOrFail($id);
-
-        return $this->respondSuccess(
-            'order initialised',
-            'SUCCESS_OK',
-            $order
         );
     }
 
@@ -77,19 +100,28 @@ class OrderController extends Controller
     {
         $this->validateWebhook($request);
 
-        $payment = $this->getPayment($request->id);
+        $payment_id = $request->get('id');
 
-        dd($payment); // TODO: check if equals null on invalid id
-
-        if (!$payment) {
+        try {
+            $payment = $this->getPayment($payment_id);
+        } catch (Exception $error) {
             return $this->respondSuccess(
                 'order updated',
                 'SUCCESS_OK'
             );
         }
 
-        $payment_id = $payment->metadata->order_id;
         $order = Order::wherePayment_id($payment_id)->first();
+
+        if (!$order) {
+            // TODO: log error
+
+            return $this->respondError(
+                'order not found',
+                'CLIENT_ERROR_NOT_FOUND'
+            );
+        }
+
         $order->state = $payment->status;
         $order->save();
 
@@ -102,7 +134,7 @@ class OrderController extends Controller
     /**
      * Get Payment.
      *
-     * @param [type] $id
+     * @param string $id
      */
     protected function getPayment($id)
     {

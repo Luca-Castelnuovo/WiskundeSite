@@ -2,19 +2,31 @@
 
 namespace App\Models;
 
+use App\Traits\UUIDS;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    use UUIDS;
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'items',
+        'products',
+        'price',
         'user_id',
         'payment_id',
+        'state',
     ];
 
     /**
@@ -34,6 +46,18 @@ class Order extends Model
      */
     protected $hidden = [
         'created_at',
+        'payment_id',
+        'user_id',
+        'id',
+    ];
+
+    /**
+     * Convert JSON to array.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'products' => 'array',
     ];
 
     /**

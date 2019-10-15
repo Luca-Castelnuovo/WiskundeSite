@@ -86,12 +86,12 @@ class ProductsController extends Controller
      */
     public function create(Request $request)
     {
-        $this->validateCreate($this->request);
+        $this->validateCreate($request);
 
         $s3 = app('aws')->createClient('s3');
         $fileKey = UtilsHelper::generateRandomToken().'.pdf';
 
-        $fileBase64 = $this->request->get('file');
+        $fileBase64 = $request->get('file');
         $fileDecoded = base64_decode($fileBase64);
 
         $s3->putObject([

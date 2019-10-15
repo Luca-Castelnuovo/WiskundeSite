@@ -15,6 +15,7 @@ trait ValidatesOrderRequests
     {
         $this->validate($request, [
             'products' => 'required|array',
+            'products.*' => 'required|integer|distinct',
         ]);
     }
 
@@ -26,7 +27,7 @@ trait ValidatesOrderRequests
     protected function validateWebhook(Request $request)
     {
         $this->validate($request, [
-            'id' => 'required|integer',
+            'id' => 'required|string',
         ]);
     }
 }

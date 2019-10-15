@@ -6,7 +6,7 @@ Hello {{ $user->name }},
 
 To reset your password, click following link and type in your new password:
 
-@component('mail::button', ['url' => $resetPasswordUrl])
+@component('mail::button', ['url' => $resetPasswordURL])
 Reset password
 @endcomponent
 

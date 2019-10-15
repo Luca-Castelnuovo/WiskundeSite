@@ -13,10 +13,8 @@ class RegisterConfirmationMail extends Mailable
     /**
      * Create a new message instance.
      *
-     * @param User $user
+     * @param User   $user
      * @param string $verify_mail_token
-     *
-     * @return void
      */
     public function __construct($user, $verify_mail_token)
     {
@@ -34,7 +32,7 @@ class RegisterConfirmationMail extends Mailable
         return $this->markdown(
             'mail.RegisterConfirmation',
             [
-                'verifyEmailUrl' => config('app.domain') . '/auth/verify/' . $this->verify_mail_token,
+                'verifyEmailURL' => config('app.domain').'/auth/verify/'.$this->verify_mail_token,
             ]
         );
     }

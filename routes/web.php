@@ -54,7 +54,7 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Order
     $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
-        $router->get('order', 'OrderController@show');
+        $router->get('order/{id}', 'OrderController@status');
         $router->post('order', 'OrderController@create');
     });
 
