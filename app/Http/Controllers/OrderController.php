@@ -55,11 +55,18 @@ class OrderController extends Controller
         $products = Product::findOrFail($product_ids);
 
         $price = $products->sum('price');
+        $order = Order::create([
+            'products' => $product_ids,
+            'price' => $price,
+            'user_id' => $request->user_id,
+            'payment_id' => 'UNKOWN',
+            'state' => 'open',
+        ]);
+
         $priceString = number_format($price, 2, '.', '');
         $description = config('mollie.order_prefix').'#'.time();
-        $redirectURL = 'https://google.com'; // TODO: set url for front-end
-        $webhookURL = 'https://wiskundesite.free.beeceptor.com'; // TODO: route('mollie_webhook')
-
+        $redirectURL = config('mollie.redirectURL').$order->id;
+        $webhookURL = config('mollie.webhookURL');
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => config('mollie.currency'),
@@ -69,21 +76,15 @@ class OrderController extends Controller
             'redirectUrl' => $redirectURL,
             'webhookUrl' => $webhookURL,
         ]);
-        $order = Order::create([
-            'products' => $product_ids,
-            'price' => $price,
-            'user_id' => $request->user_id,
-            'payment_id' => $payment->id,
-            'state' => 'open',
-        ]);
 
+        $order->payment_id = $payment->id;
+        $order->save();
         $payment = $this->getPayment($payment->id);
 
         return $this->respondSuccess(
             'order initialised',
             'SUCCESS_OK',
             [
-                'order_id' => $order->id,
                 'payment_url' => $payment->getCheckoutUrl(),
             ]
         );

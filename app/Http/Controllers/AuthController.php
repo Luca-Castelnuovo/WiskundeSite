@@ -117,6 +117,8 @@ class AuthController extends Controller
         if ($credentials->token !== $session->token) {
             $session->delete();
 
+            // TODO: log error
+
             return $this->respondError(
                 'token theft detected',
                 'CLIENT_ERROR_UNAUTHORIZED'
