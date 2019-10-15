@@ -11,7 +11,6 @@
 |
 */
 
-// Factory definition for model App\Models\User.
 $factory->define(App\Models\User::class, function ($faker) {
     return [
         'name' => 'fooBar',

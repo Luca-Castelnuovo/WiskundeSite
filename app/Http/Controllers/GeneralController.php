@@ -15,7 +15,7 @@ class GeneralController extends Controller
     public function index()
     {
         return $this->respondSuccess(
-            'https://docs.wiskundesite.nl',
+            config('app.docs_url'),
             'SUCCESS_OK',
             [
                 'time' => Carbon::now()->toDateTimeString(),

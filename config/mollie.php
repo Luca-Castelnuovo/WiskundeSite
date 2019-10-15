@@ -3,6 +3,6 @@
 return [
     'currency' => 'EUR',
     'order_prefix' => 'WiskundeSite: ',
-    'redirectURL' => 'https://example.com/',
-    'webhookURL' => 'https://wiskundesite.free.beeceptor.com/',
+    'redirect_url' => 'https://example.com/',
+    'webhook_url' => 'https://wiskundesite.free.beeceptor.com/',
 ];

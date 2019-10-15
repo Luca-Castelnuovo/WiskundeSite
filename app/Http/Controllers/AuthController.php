@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -117,7 +118,7 @@ class AuthController extends Controller
         if ($credentials->token !== $session->token) {
             $session->delete();
 
-            // TODO: log error
+            Log::warning('token theft detected User:'.$user->id);
 
             return $this->respondError(
                 'token theft detected',

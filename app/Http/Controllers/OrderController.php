@@ -8,6 +8,7 @@ use App\Validators\ValidatesOrderRequests;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Mollie\Laravel\Facades\Mollie;
 
 class OrderController extends Controller
@@ -65,8 +66,8 @@ class OrderController extends Controller
 
         $priceString = number_format($price, 2, '.', '');
         $description = config('mollie.order_prefix').'#'.time();
-        $redirectURL = config('mollie.redirectURL').$order->id;
-        $webhookURL = config('mollie.webhookURL');
+        $redirectURL = config('mollie.redirect_url').$order->id;
+        $webhookURL = config('mollie.webhook_url');
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => config('mollie.currency'),
@@ -115,7 +116,7 @@ class OrderController extends Controller
         $order = Order::wherePaymentId($payment_id)->first();
 
         if (!$order) {
-            // TODO: log error
+            Log::critical('Order not connected to payment_id: '.$payment_id);
 
             return $this->respondError(
                 'order not found',
