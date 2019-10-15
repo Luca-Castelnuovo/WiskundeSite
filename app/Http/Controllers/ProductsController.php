@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\UtilsHelper;
+use App\Models\Order;
 use App\Models\Product;
 use App\Validators\ValidatesProductsRequests;
 use Illuminate\Http\JsonResponse;
@@ -49,15 +50,28 @@ class ProductsController extends Controller
     /**
      * Open product pdf.
      *
-     * @param string $id
+     * @param Request $request
+     * @param string  $id
      *
      * @return JsonResponse
      */
-    public function open($id)
+    public function open(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $id = (int) $id;
+        $order = Order::whereUserId($request->user_id)
+            ->whereState('paid')
+            ->whereJsonContains('products', [$id])
+            ->first()
+        ;
 
-        // TODO: check orders for user_id and product_id, when found query mollie for payment status
+        if (!$order) {
+            return $this->respondError(
+                'product not purchased',
+                'CLIENT_ERROR_FORBIDDEN'
+            );
+        }
+
+        $product = Product::findOrFail($id);
 
         $s3 = app('aws')->createClient('s3');
 
@@ -79,8 +93,6 @@ class ProductsController extends Controller
 
     /**
      * Create product.
-     *
-     * @param Request $request
      *
      * @return JsonResponse
      */

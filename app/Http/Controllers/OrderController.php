@@ -112,7 +112,7 @@ class OrderController extends Controller
             );
         }
 
-        $order = Order::wherePayment_id($payment_id)->first();
+        $order = Order::wherePaymentId($payment_id)->first();
 
         if (!$order) {
             // TODO: log error

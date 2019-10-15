@@ -79,7 +79,7 @@ class AccountsController extends Controller
     {
         $user = $this->user();
 
-        Session::whereUser_id($user->id)->delete();
+        $user->sessions()->delete();
         Mail::to($user->email)->send(new DeleteAccountMail($user));
 
         $user->delete();
