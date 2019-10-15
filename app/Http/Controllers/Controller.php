@@ -9,7 +9,6 @@ class Controller extends BaseController
 {
     private $status_codes = [
         'SUCCESS_OK' => 200,
-        'SUCCESS_CREATED' => 201,
         'CLIENT_ERROR_BAD_REQUEST' => 400,
         'CLIENT_ERROR_UNAUTHORIZED' => 401,
         'CLIENT_ERROR_FORBIDDEN' => 403,

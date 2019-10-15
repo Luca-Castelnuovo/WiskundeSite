@@ -43,6 +43,7 @@ trait ValidatesAuthRequests
             'name' => 'required|max:50|alpha_num',
             'email' => 'required|max:255|email|unique:users,email',
             'password' => 'required|min:8',
+            'role' => 'required|string|in:student,teacher',
         ]);
     }
 

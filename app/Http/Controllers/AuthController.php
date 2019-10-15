@@ -193,6 +193,7 @@ class AuthController extends Controller
             'name' => $request->get('name'),
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
+            'role' => $request->get('role'),
         ]);
 
         $verify_mail_token = UtilsHelper::generateRandomToken();
@@ -212,7 +213,7 @@ class AuthController extends Controller
 
         return $this->respondSuccess(
             'registration successful',
-            'SUCCESS_CREATED',
+            'SUCCESS_OK',
             $user->toArray()
         );
     }
