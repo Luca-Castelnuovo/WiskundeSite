@@ -56,7 +56,7 @@ class OrderController extends Controller
 
         $price = $products->sum('price');
         $priceString = number_format($price, 2, '.', '');
-        $description = 'test'.time(); // TODO: dynamically set these
+        $description = config('mollie.order_prefix').'#'.time();
         $redirectURL = 'https://google.com'; // TODO: set url for front-end
         $webhookURL = 'https://wiskundesite.free.beeceptor.com'; // TODO: route('mollie_webhook')
 
