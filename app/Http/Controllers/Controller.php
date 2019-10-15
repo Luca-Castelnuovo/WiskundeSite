@@ -10,14 +10,11 @@ class Controller extends BaseController
     private $status_codes = [
         'SUCCESS_OK' => 200,
         'SUCCESS_CREATED' => 201,
-        'SUCCESS_NO_CONTENT' => 204,
         'CLIENT_ERROR_BAD_REQUEST' => 400,
         'CLIENT_ERROR_UNAUTHORIZED' => 401,
         'CLIENT_ERROR_FORBIDDEN' => 403,
         'CLIENT_ERROR_NOT_FOUND' => 404,
         'METHOD_NOT_ALLOWED' => 405,
-        'CLIENT_ERROR_CONFLICT' => 409,
-        'CLIENT_ERROR_UNPROCESSABLE_ENTITY' => 422,
     ];
 
     /**
