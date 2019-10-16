@@ -58,23 +58,24 @@ class ProductsController extends Controller
     public function open(Request $request, $id)
     {
         $id = (int) $id;
-        $order = Order::whereUserId($request->user_id)
-            ->whereState('paid')
-            ->whereJsonContains('products', [$id])
-            ->first()
-        ;
-
-        if (!$order) {
-            return $this->respondError(
-                'product not purchased',
-                'CLIENT_ERROR_FORBIDDEN'
-            );
-        }
-
         $product = Product::findOrFail($id);
 
-        $s3 = app('aws')->createClient('s3');
+        if ($product->user_id !== $request->user_id) {
+            $order = Order::whereUserId($request->user_id)
+                ->whereState('paid')
+                ->whereJsonContains('products', [$id])
+                ->first()
+            ;
 
+            if (!$order) {
+                return $this->respondError(
+                    'product not purchased',
+                    'CLIENT_ERROR_FORBIDDEN'
+                );
+            }
+        }
+
+        $s3 = app('aws')->createClient('s3');
         $cmd = $s3->getCommand('GetObject', [
             'Bucket' => config('services.s3.bucket'),
             'Key' => $product->fileKey,
