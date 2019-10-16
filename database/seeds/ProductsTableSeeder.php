@@ -11,6 +11,7 @@ class ProductsTableSeeder extends Seeder
     public function run()
     {
         Product::create([
+            'user_id' => 2,
             'name' => 'Hoofdstuk 8 Oefentoets',
             'price' => 2.50,
             'subject' => 'Wiskunde A',
@@ -20,6 +21,7 @@ class ProductsTableSeeder extends Seeder
         ]);
 
         Product::create([
+            'user_id' => 2,
             'name' => 'Hoofdstuk 9 Samenvatting',
             'price' => 3.75,
             'subject' => 'Wiskunde A',

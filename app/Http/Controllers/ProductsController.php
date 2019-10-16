@@ -114,6 +114,7 @@ class ProductsController extends Controller
         ]);
 
         $product = Product::create([
+            'user_id' => $request->user_id,
             'name' => $request->get('name'),
             'price' => $request->get('price'),
             'subject' => $request->get('subject'),
