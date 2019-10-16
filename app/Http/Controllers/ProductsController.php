@@ -18,13 +18,28 @@ class ProductsController extends Controller
     /**
      * Show all products.
      *
+     * @param Request $request
+     *
      * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
         $products = Product::all();
 
-        // TODO: hide products under review and denied
+        switch ($request->role) {
+            case 'student':
+                $products = $products->filter(function ($product) {
+                    return 'accepted' === $product->state;
+                });
+
+                break;
+            case 'teacher':
+                $products = $products->filter(function ($product, Request $request) {
+                    return 'accepted' === $product->state || $product->user_id === $request->user_id;
+                });
+
+                break;
+        }
 
         return $this->respondSuccess(
             '',

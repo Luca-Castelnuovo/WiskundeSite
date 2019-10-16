@@ -56,6 +56,8 @@ class OrderController extends Controller
         $products = Product::findOrFail($product_ids)->whereState('accepted')->where('user_id', '!=', $request->user_id)->get();
 
         if (!$products) {
+            Log::critical('User has illegall items in cart');
+
             return $this->respondError(
                 'products can\'t be purchased',
                 'CLIENT_ERROR_BAD_REQUEST'
