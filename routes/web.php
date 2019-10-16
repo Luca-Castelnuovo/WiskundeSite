@@ -66,10 +66,11 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->group(['middleware' => 'authorization:admin'], function () use ($router) {
         $router->get('admin/users', 'AdminController@all');
         $router->get('admin/users/{id:[0-9]+}', 'AdminController@show');
-        $router->get('admin/users/{id:[0-9]+}', 'AdminController@showProducts');
-        $router->get('admin/users/{id:[0-9]+}', 'AdminController@showSessions');
         $router->put('admin/users/{id:[0-9]+}', 'AdminController@update');
         $router->delete('admin/users/{id:[0-9]+}', 'AdminController@delete');
-        $router->delete('admin/users/sessions', 'AccountsController@revokeSession');
+
+        $router->get('admin/users/{id:[0-9]+}/products', 'AdminController@showProducts');
+        $router->get('admin/users/{id:[0-9]+}/sessions', 'AdminController@showSessions');
+        $router->delete('admin/users/{id:[0-9]+}/sessions', 'AdminController@revokeSession');
     });
 });
