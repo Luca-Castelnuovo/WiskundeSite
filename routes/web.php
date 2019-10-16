@@ -38,6 +38,10 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->get('account', 'AccountsController@index');
     $router->put('account', 'AccountsController@update');
     $router->delete('account', 'AccountsController@delete');
+    $router->get('account/products', [
+        'middleware' => 'authorization:teacher.admin',
+        'use' => 'AccountsController@showProducts',
+    ]);
     $router->get('account/sessions', 'AccountsController@showSessions');
     $router->delete('account/sessions', 'AccountsController@revoke');
 

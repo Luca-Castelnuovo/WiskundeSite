@@ -91,6 +91,22 @@ class AccountsController extends Controller
     }
 
     /**
+     * Show products.
+     *
+     * @return JsonResponse
+     */
+    public function showProducts()
+    {
+        $products = $this->user()->products();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            ['products' => $products->get()]
+        );
+    }
+
+    /**
      * Show sessions.
      *
      * @return JsonResponse
