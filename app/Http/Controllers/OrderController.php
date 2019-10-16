@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Validators\ValidatesOrderRequests;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +16,24 @@ use Mollie\Laravel\Facades\Mollie;
 class OrderController extends Controller
 {
     use ValidatesOrderRequests;
+
+    /**
+     * All orders.
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function index(Request $request)
+    {
+        $orders = Order::whereUserId($request->user_id)->get();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            ['orders' => $orders]
+        );
+    }
 
     /**
      * Show order.
@@ -135,6 +155,13 @@ class OrderController extends Controller
 
         $order->state = $payment->status;
         $order->save();
+
+        if ('paid' === $order->state) {
+            $user = User::findOrFail($order->user_id);
+            $products = Product::findOrFail($order->products);
+
+            Mail::to($user->email)->send(new OrderConfirmation($user, $products));
+        }
 
         return $this->respondSuccess(
             'order updated',

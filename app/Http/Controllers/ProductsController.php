@@ -22,7 +22,7 @@ class ProductsController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(Request $request)
+    public function all(Request $request)
     {
         $products = Product::all();
 

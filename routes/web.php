@@ -25,7 +25,7 @@ $router->group(['middleware' => 'ratelimit:60,60'], function () use ($router) {
     $router->post('auth/reset', 'AuthController@resetPassword');
 
     // Order
-    $router->post('order/webhook', [
+    $router->post('orders/webhook', [
         'as' => 'mollie_webhook', 'uses' => 'OrderController@webhook',
     ]);
 });
@@ -46,7 +46,7 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->delete('account/sessions', 'AccountsController@revoke');
 
     // Products
-    $router->get('products', 'ProductsController@index');
+    $router->get('products', 'ProductsController@all');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
     $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
     $router->group(['middleware' => 'authorization:teacher.admin'], function () use ($router) {
@@ -57,8 +57,9 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Order
     $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
-        $router->get('order/{id:[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}}', 'OrderController@status');
-        $router->post('order', 'OrderController@create');
+        $router->get('orders', 'OrderController@all');
+        $router->get('orders/{id:[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}}', 'OrderController@status');
+        $router->post('orders', 'OrderController@create');
     });
 
     // Admin
