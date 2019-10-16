@@ -44,7 +44,7 @@ class OrderController extends Controller
      *
      * @return JsonResponse
      */
-    public function status(Request $request, $id)
+    public function show(Request $request, $id)
     {
         $order = Order::findOrFail($id);
 

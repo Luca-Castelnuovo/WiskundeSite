@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mail\DeleteAccountMail;
-use App\Models\Session;
 use App\Models\User;
-use App\Validators\ValidatesAccountsRequests;
+use App\Validators\ValidatesAdminRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,26 +12,34 @@ use Illuminate\Support\Facades\Mail;
 
 class AccountsController extends Controller
 {
-    use ValidatesAccountsRequests;
+    use ValidatesAdminRequests;
 
     /**
-     * Add Request to class.
-     *
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
-
-    /**
-     * View user.
+     * Show user.
      *
      * @return JsonResponse
      */
-    public function show()
+    public function all()
     {
-        $user = $this->user();
+        $users = User::all();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            ['users' => $users]
+        );
+    }
+
+    /**
+     * Show user.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
 
         return $this->respondSuccess(
             '',
@@ -46,12 +53,13 @@ class AccountsController extends Controller
      * Returns updated user.
      *
      * @param Request $request
+     * @param int     $id
      *
      * @return JsonResponse
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $user = $this->user();
+        $user = User::findOrFail($id);
 
         $this->validateUpdate($request, $user);
 
@@ -59,12 +67,14 @@ class AccountsController extends Controller
             'name' => $request->get('name', $user->name),
             'email' => $request->get('email', $user->email),
             'password' => $request->has('password') ? Hash::make($request->input('password')) : $user->password,
+            'role' => $request->get('role', $user->role),
+            'verified' => $request->get('verified', $user->verified),
         ]);
 
         $user->save();
 
         return $this->respondSuccess(
-            'account updated',
+            'user updated',
             'SUCCESS_OK',
             $user->toArray()
         );
@@ -74,19 +84,19 @@ class AccountsController extends Controller
      * Delete user
      * Revokes all sessions.
      *
+     * @param int $id
+     *
      * @return JsonResponse
      */
-    public function delete()
+    public function delete($id)
     {
-        $user = $this->user();
-
+        $user = User::findOrFail($id);
         $user->sessions()->delete();
         Mail::to($user->email)->send(new DeleteAccountMail($user));
-
         $user->delete();
 
         return $this->respondSuccess(
-            'account deleted',
+            'user deleted',
             'SUCCESS_OK'
         );
     }
@@ -94,11 +104,13 @@ class AccountsController extends Controller
     /**
      * Show products.
      *
+     * @param int $id
+     *
      * @return JsonResponse
      */
-    public function showProducts()
+    public function showProducts($id)
     {
-        $products = $this->user()->products();
+        $products = User::findOrFail($id)->products();
 
         return $this->respondSuccess(
             '',
@@ -110,16 +122,18 @@ class AccountsController extends Controller
     /**
      * Show sessions.
      *
+     * @param int $id
+     *
      * @return JsonResponse
      */
-    public function showSessions()
+    public function showSessions($id)
     {
-        $refresh_tokens = $this->user()->sessions();
+        $sessions = User::findOrFail($id)->sessions();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['sessions' => $refresh_tokens->get()]
+            ['sessions' => $sessions->get()]
         );
     }
 
@@ -134,38 +148,11 @@ class AccountsController extends Controller
     {
         $this->validateRevoke($request);
 
-        $revokable_session_uuid = $request->get('session_uuid');
-        $revokable_session = Session::findOrFail($revokable_session_uuid);
-
-        if ($revokable_session_uuid === $request->session_uuid) {
-            return $this->respondError(
-                'can\'t revoke current session',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        if ($revokable_session->user_id !== $request->user_id) {
-            return $this->respondError(
-                'session not found',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        $revokable_session->delete();
+        Session::findOrFail($request->get('session_uuid'))->delete();
 
         return $this->respondSuccess(
-            'session revoked',
+            'user session revoked',
             'SUCCESS_OK'
         );
-    }
-
-    /**
-     * Get user from JWT.
-     *
-     * @return User
-     */
-    protected function user()
-    {
-        return User::findOrFail($this->request->user_id);
     }
 }
