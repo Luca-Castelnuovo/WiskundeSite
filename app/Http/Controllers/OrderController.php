@@ -85,6 +85,21 @@ class OrderController extends Controller
             );
         }
 
+        foreach ($products as $product) {
+            $order = Order::whereUserId($request->user_id)
+                ->whereState('paid')
+                ->whereJsonContains('products', [$product])
+                ->first()
+                ;
+
+            if ($order) {
+                return $this->respondError(
+                    'user already owns items in cart',
+                    'CLIENT_ERROR_BAD_REQUEST'
+                );
+            }
+        }
+
         $price = $products->sum('price');
         $order = Order::create([
             'products' => $product_ids,

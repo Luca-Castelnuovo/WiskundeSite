@@ -78,6 +78,14 @@ class ProductsController extends Controller
             }
         }
 
+        $order = Order::whereUserId($request->user_id)
+            ->whereState('paid')
+            ->whereJsonContains('products', [(int) $id])
+            ->first()
+        ;
+
+        $product->owned_by_user = (bool) $order;
+
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
