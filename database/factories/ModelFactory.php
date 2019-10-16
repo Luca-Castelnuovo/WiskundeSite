@@ -10,12 +10,3 @@
 | database. Just tell the factory how a default model should look.
 |
 */
-
-$factory->define(App\Models\User::class, function ($faker) {
-    return [
-        'name' => 'fooBar',
-        'email' => 'ltcastelnuovo@gmail.com',
-        'password' => app('hash')->make('fooBar1234'),
-        'role' => '*',
-    ];
-});
