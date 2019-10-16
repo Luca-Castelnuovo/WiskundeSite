@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\UtilsHelper;
-use App\Mail\ProductStateUpdate;
+use App\Mail\ProductStateUpdateMail;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -236,7 +236,7 @@ class ProductsController extends Controller
         if ($request->get('state')) {
             $product_owner = User::findOrFail($product->user_id);
 
-            Mail::to($product_owner->email)->send(new ProductStateUpdate(
+            Mail::to($product_owner->email)->send(new ProductStateUpdateMail(
                 $product_owner,
                 $product->state,
                 $request->get('reason')

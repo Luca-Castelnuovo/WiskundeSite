@@ -19,7 +19,7 @@ class JSONMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
-            if ('order/webhook' === $request->path()) {
+            if ('orders/webhook' === $request->path()) {
                 return $next($request);
             }
 

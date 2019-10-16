@@ -6,7 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Mail\Mailable;
 
-class ProductStateUpdate extends Mailable
+class ProductStateUpdateMail extends Mailable
 {
     public $user;
     public $product;
