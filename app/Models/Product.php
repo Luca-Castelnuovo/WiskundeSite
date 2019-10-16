@@ -40,4 +40,12 @@ class Product extends Model
     protected $hidden = [
         'fileKey',
     ];
+
+    /**
+     * Define relationship.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
