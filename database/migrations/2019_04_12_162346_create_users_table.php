@@ -14,7 +14,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role');
-            $table->boolean('verified');
+            $table->boolean('verified')->default(true);
             $table->string('reset_password_token', config('tokens.jwt_token.length'))->nullable()->unique();
             $table->string('verify_email_token', config('tokens.jwt_token.length'))->nullable()->unique();
             $table->timestamps();
