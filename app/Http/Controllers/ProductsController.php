@@ -34,8 +34,8 @@ class ProductsController extends Controller
 
                 break;
             case 'teacher':
-                $products = $products->filter(function ($product, Request $request) {
-                    return 'accepted' === $product->state || $product->user_id === $request->user_id;
+                $products = $products->filter(function ($product) use ($request) {
+                    return 'accepted' === $product->state || $request->user_id === $product->user_id;
                 });
 
                 break;
@@ -60,21 +60,12 @@ class ProductsController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        if ('admin' !== $request->role) {
-            if ('denied' === $product->state) {
+        if ('admin' !== $request->role && $product->user_id !== $request->user_id) {
+            if ('accepted' !== $product->state) {
                 return $this->respondError(
-                    'product can\'t be accessed while denied',
+                    'product can\'t be accessed while '.$product->state,
                     'CLIENT_ERROR_FORBIDDEN'
                 );
-            }
-
-            if ($product->user_id !== $request->user_id) {
-                if ('under_review' === $product->state) {
-                    return $this->respondError(
-                        'product can\'t be accessed while under review',
-                        'CLIENT_ERROR_FORBIDDEN'
-                    );
-                }
             }
         }
 

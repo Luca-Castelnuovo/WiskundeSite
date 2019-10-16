@@ -73,12 +73,14 @@ class OrderController extends Controller
     {
         $this->validateCreate($request);
 
-        $product_ids = $request->get('products');
-        $products = Product::findOrFail($product_ids)->whereState('accepted')->where('user_id', '!=', $request->user_id)->get();
+        $product_ids = implode(',', $request->get('products'));
+        $products = Product::findOrFail($product_ids)
+            ->whereState('accepted')
+            ->where('user_id', '!=', $request->user_id)
+            ->get()
+        ;
 
-        if (!$products) {
-            Log::critical('User has illegall items in cart');
-
+        if (!$products || count($request->get('products')) !== count($products)) {
             return $this->respondError(
                 'products can\'t be purchased',
                 'CLIENT_ERROR_BAD_REQUEST'
@@ -88,9 +90,9 @@ class OrderController extends Controller
         foreach ($products as $product) {
             $order = Order::whereUserId($request->user_id)
                 ->whereState('paid')
-                ->whereJsonContains('products', [$product])
+                ->whereJsonContains('products', [$product->id])
                 ->first()
-                ;
+            ;
 
             if ($order) {
                 return $this->respondError(
@@ -102,7 +104,7 @@ class OrderController extends Controller
 
         $price = $products->sum('price');
         $order = Order::create([
-            'products' => $product_ids,
+            'products' => $request->get('products'),
             'price' => $price,
             'user_id' => $request->user_id,
             'payment_id' => 'UNKOWN',

@@ -40,7 +40,7 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->delete('account', 'AccountsController@delete');
     $router->get('account/products', [
         'middleware' => 'authorization:teacher.admin',
-        'use' => 'AccountsController@showProducts',
+        'uses' => 'AccountsController@showProducts',
     ]);
     $router->get('account/sessions', 'AccountsController@showSessions');
     $router->delete('account/sessions', 'AccountsController@revoke');
