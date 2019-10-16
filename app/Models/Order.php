@@ -45,10 +45,7 @@ class Order extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at',
         'payment_id',
-        'user_id',
-        'id',
     ];
 
     /**

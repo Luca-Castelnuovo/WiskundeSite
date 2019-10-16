@@ -254,7 +254,6 @@ class AuthController extends Controller
         $user = User::whereEmail($request->get('email'))->first();
 
         if (!$user) {
-            // Fake success
             return $this->respondSuccess(
                 'reset requested',
                 'SUCCESS_OK'

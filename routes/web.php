@@ -62,7 +62,6 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Admin
     $router->group(['middleware' => 'authorization:admin'], function () use ($router) {
-        // TODO: implement admin endpoints
         // $router->get('admin/users', 'AccountsController@admin_all');
         // $router->get('admin/users/{id:[0-9]+}', 'AccountsController@admin_view');
         // $router->put('admin/users/{id:[0-9]+}', 'AccountsController@admin_update');

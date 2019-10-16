@@ -53,9 +53,14 @@ class OrderController extends Controller
         $this->validateCreate($request);
 
         $product_ids = $request->get('products');
-        $products = Product::findOrFail($product_ids);
+        $products = Product::findOrFail($product_ids)->whereState('accepted')->where('user_id', '!=', $request->user_id)->get();
 
-        // TODO: prevent order of products with state !== 'accepted'
+        if (!$products) {
+            return $this->respondError(
+                'products can\'t be purchased',
+                'CLIENT_ERROR_BAD_REQUEST'
+            );
+        }
 
         $price = $products->sum('price');
         $order = Order::create([
