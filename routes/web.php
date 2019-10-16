@@ -44,13 +44,22 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     // Products
     $router->get('products', 'ProductsController@index');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
-    $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
-
-    $router->group(['middleware' => 'authorization:teacher.admin'], function () use ($router) {
-        $router->post('products', 'ProductsController@create');
-        $router->put('products/{id:[0-9]+}', 'ProductsController@update');
-        $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
-    });
+    $router->get('products/{id:[0-9]+}/open', [
+        'middleware' => 'authorization:student.teacher',
+        'uses' => 'ProductsController@open',
+    ]);
+    $router->post('products', [
+        'middleware' => 'authorization:teacher',
+        'uses' => 'ProductsController@create',
+    ]);
+    $router->put('products/{id:[0-9]+}', [
+        'middleware' => 'authorization:admin',
+        'uses' => 'ProductsController@update',
+    ]);
+    $router->delete('products/{id:[0-9]+}', [
+        'middleware' => 'authorization:teacher',
+        'uses' => 'ProductsController@delete',
+    ]);
 
     // Order
     $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
@@ -60,4 +69,9 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Filter
     // $router->get('filter', 'FilterController@index');
+
+    // Admin
+    // list users
+    // update user
+    // delete user
 });
