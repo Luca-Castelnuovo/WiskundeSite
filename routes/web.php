@@ -57,9 +57,6 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
         $router->post('order', 'OrderController@create');
     });
 
-    // Filter
-    // $router->get('filter', 'FilterController@index');
-
     // Admin
     $router->group(['middleware' => 'authorization:admin'], function () use ($router) {
         // $router->get('admin/users', 'AccountsController@admin_all');
