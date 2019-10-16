@@ -7,6 +7,7 @@ use App\Helpers\JWTHelper;
 use App\Helpers\UtilsHelper;
 use App\Mail\RegisterConfirmationMail;
 use App\Mail\RequestResetPasswordMail;
+use App\Mail\TeacherRegisterMail;
 use App\Models\Session;
 use App\Models\User;
 use App\Validators\ValidatesAuthRequests;
@@ -203,6 +204,10 @@ class AuthController extends Controller
             'role' => $request->get('role'),
             'verified' => 'student' === $request->get('role'),
         ]);
+
+        if (!$user->verified) {
+            Mail::to(config('app.admin_email'))->send(new TeacherRegisterMail($user));
+        }
 
         $verify_mail_token = UtilsHelper::generateRandomToken();
         $verify_mail_token_JWT = $this->generateJWT(

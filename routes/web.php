@@ -48,18 +48,11 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
         'middleware' => 'authorization:student.teacher',
         'uses' => 'ProductsController@open',
     ]);
-    $router->post('products', [
-        'middleware' => 'authorization:teacher',
-        'uses' => 'ProductsController@create',
-    ]);
-    $router->put('products/{id:[0-9]+}', [
-        'middleware' => 'authorization:admin',
-        'uses' => 'ProductsController@update',
-    ]);
-    $router->delete('products/{id:[0-9]+}', [
-        'middleware' => 'authorization:teacher',
-        'uses' => 'ProductsController@delete',
-    ]);
+    $router->group(['middleware' => 'authorization:teacher'], function () use ($router) {
+        $router->post('products', 'ProductsController@create');
+        $router->put('products/{id:[0-9]+}', 'ProductsController@update');
+        $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
+    });
 
     // Order
     $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
@@ -71,7 +64,12 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     // $router->get('filter', 'FilterController@index');
 
     // Admin
-    // list users
-    // update user
-    // delete user
+    $router->group(['middleware' => 'authorization:admin'], function () use ($router) {
+        $router->get('admin/users', 'AccountsController@admin_all');
+        $router->get('admin/users/{id:[0-9]+}', 'AccountsController@admin_view');
+        $router->put('admin/users/{id:[0-9]+}', 'AccountsController@admin_update');
+        $router->delete('admin/users/{id:[0-9]+}', 'AccountsController@admin_delete');
+
+        $router->put('admin/products/{id:[0-9]+}', 'ProductsController@admin_update');
+    });
 });
