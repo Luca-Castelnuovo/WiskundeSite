@@ -160,7 +160,7 @@ class OrderController extends Controller
             $user = User::findOrFail($order->user_id);
             $products = Product::findOrFail($order->products);
 
-            Mail::to($user->email)->send(new OrderConfirmation($user, $products));
+            Mail::to($user->email)->send(new OrderConfirmation($user, $products, $order));
         }
 
         return $this->respondSuccess(
