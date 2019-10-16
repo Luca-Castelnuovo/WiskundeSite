@@ -60,6 +60,13 @@ class AuthController extends Controller
             );
         }
 
+        if (!$user->verified) {
+            return $this->respondError(
+                'account not verified',
+                'CLIENT_ERROR_UNAUTHORIZED'
+            );
+        }
+
         $session = new Session();
 
         $session->user_id = $user->id;
@@ -194,6 +201,7 @@ class AuthController extends Controller
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
             'role' => $request->get('role'),
+            'verified' => 'student' === $request->get('role'),
         ]);
 
         $verify_mail_token = UtilsHelper::generateRandomToken();

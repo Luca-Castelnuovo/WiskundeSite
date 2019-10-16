@@ -16,6 +16,7 @@ class User extends Model
         'email',
         'password',
         'role',
+        'verified',
         'reset_password_token',
         'verify_email_token',
     ];
@@ -38,6 +39,7 @@ class User extends Model
     protected $hidden = [
         'id',
         'password',
+        'verified',
         'reset_password_token',
         'verify_email_token',
     ];
@@ -56,5 +58,13 @@ class User extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get all the products by the user.
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
     }
 }
