@@ -55,6 +55,8 @@ class OrderController extends Controller
         $product_ids = $request->get('products');
         $products = Product::findOrFail($product_ids);
 
+        // TODO: prevent order of products with state !== 'accepted'
+
         $price = $products->sum('price');
         $order = Order::create([
             'products' => $product_ids,

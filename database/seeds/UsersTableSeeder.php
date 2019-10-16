@@ -30,12 +30,5 @@ class UsersTableSeeder extends Seeder
             'password' => app('hash')->make('fooBar1234'),
             'role' => 'admin',
         ]);
-
-        User::create([
-            'name' => 'unlimitedAccount',
-            'email' => 'unlimitedAccount@gmail.com',
-            'password' => app('hash')->make('fooBar1234'),
-            'role' => '*',
-        ]);
     }
 }

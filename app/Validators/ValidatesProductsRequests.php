@@ -43,6 +43,8 @@ trait ValidatesProductsRequests
             'subject' => 'sometimes|max:255|string',
             'class' => 'sometimes|max:255|string',
             'method' => 'sometimes|max:255|string',
+            'state' => 'sometimes|string|in:accepted,under_review,denied',
+            'reason' => 'sometimes|text',
         ]);
     }
 }

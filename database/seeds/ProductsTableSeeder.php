@@ -18,6 +18,7 @@ class ProductsTableSeeder extends Seeder
             'class' => '4vwo',
             'method' => 'Getal en Ruimte',
             'fileKey' => 'FILEKEY',
+            'state' => 'accepted',
         ]);
 
         Product::create([
@@ -28,6 +29,7 @@ class ProductsTableSeeder extends Seeder
             'class' => '4vwo',
             'method' => 'Getal en Ruimte',
             'fileKey' => 'FILEKEY',
+            'state' => 'accepted',
         ]);
     }
 }

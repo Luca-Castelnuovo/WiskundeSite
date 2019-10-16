@@ -20,7 +20,7 @@ class AuthorizationMiddleware
     {
         $authorized_roles = explode('.', $authorized_roles);
 
-        if (!in_array($request->role, $authorized_roles) && '*' !== $request->role) {
+        if (!in_array($request->role, $authorized_roles)) {
             return response()->json(['error' => 'incorrect access level'], 401);
         }
 

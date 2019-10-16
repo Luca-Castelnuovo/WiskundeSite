@@ -44,11 +44,8 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     // Products
     $router->get('products', 'ProductsController@index');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
-    $router->get('products/{id:[0-9]+}/open', [
-        'middleware' => 'authorization:student.teacher',
-        'uses' => 'ProductsController@open',
-    ]);
-    $router->group(['middleware' => 'authorization:teacher'], function () use ($router) {
+    $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
+    $router->group(['middleware' => 'authorization:teacher.admin'], function () use ($router) {
         $router->post('products', 'ProductsController@create');
         $router->put('products/{id:[0-9]+}', 'ProductsController@update');
         $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
@@ -65,11 +62,10 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
 
     // Admin
     $router->group(['middleware' => 'authorization:admin'], function () use ($router) {
-        $router->get('admin/users', 'AccountsController@admin_all');
-        $router->get('admin/users/{id:[0-9]+}', 'AccountsController@admin_view');
-        $router->put('admin/users/{id:[0-9]+}', 'AccountsController@admin_update');
-        $router->delete('admin/users/{id:[0-9]+}', 'AccountsController@admin_delete');
-
-        $router->put('admin/products/{id:[0-9]+}', 'ProductsController@admin_update');
+        // TODO: implement admin endpoints
+        // $router->get('admin/users', 'AccountsController@admin_all');
+        // $router->get('admin/users/{id:[0-9]+}', 'AccountsController@admin_view');
+        // $router->put('admin/users/{id:[0-9]+}', 'AccountsController@admin_update');
+        // $router->delete('admin/users/{id:[0-9]+}', 'AccountsController@admin_delete');
     });
 });

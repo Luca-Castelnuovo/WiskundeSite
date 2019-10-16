@@ -19,6 +19,7 @@ class Product extends Model
         'class',
         'method',
         'fileKey',
+        'state',
     ];
 
     /**

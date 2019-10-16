@@ -1,6 +1,6 @@
 @component('mail::message')
 
-# Register Confirmation
+# Teacher Registration
 
 Hello Administrator,
 

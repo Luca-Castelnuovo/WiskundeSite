@@ -20,6 +20,7 @@ class CreateProductsTable extends Migration
             $table->string('class');
             $table->string('method');
             $table->string('fileKey');
+            $table->string('state');
             $table->timestamps();
         });
     }

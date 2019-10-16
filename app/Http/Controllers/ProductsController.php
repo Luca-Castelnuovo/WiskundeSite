@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\UtilsHelper;
+use App\Mail\ProductStateUpdate;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Validators\ValidatesProductsRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +24,8 @@ class ProductsController extends Controller
     {
         $products = Product::all();
 
+        // TODO: hide products under review and denied
+
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
@@ -32,13 +36,32 @@ class ProductsController extends Controller
     /**
      * Show product info.
      *
-     * @param string $id
+     * @param Request $request
+     * @param string  $id
      *
      * @return JsonResponse
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
+        if ('admin' !== $request->role) {
+            if ('denied' === $product->state) {
+                return $this->respondError(
+                    'product can\'t be accessed while denied',
+                    'CLIENT_ERROR_FORBIDDEN'
+                );
+            }
+
+            if ($product->user_id !== $request->user_id) {
+                if ('under_review' === $product->state) {
+                    return $this->respondError(
+                        'product can\'t be accessed while under review',
+                        'CLIENT_ERROR_FORBIDDEN'
+                    );
+                }
+            }
+        }
 
         return $this->respondSuccess(
             '',
@@ -60,18 +83,34 @@ class ProductsController extends Controller
         $id = (int) $id;
         $product = Product::findOrFail($id);
 
-        if ($product->user_id !== $request->user_id) {
-            $order = Order::whereUserId($request->user_id)
-                ->whereState('paid')
-                ->whereJsonContains('products', [$id])
-                ->first()
-            ;
-
-            if (!$order) {
+        if ('admin' !== $request->role) {
+            if ('denied' === $product->state) {
                 return $this->respondError(
-                    'product not purchased',
+                    'product can\'t be accessed while denied',
                     'CLIENT_ERROR_FORBIDDEN'
                 );
+            }
+
+            if ($product->user_id !== $request->user_id) {
+                if ('under_review' === $product->state) {
+                    return $this->respondError(
+                        'product can\'t be accessed while under review',
+                        'CLIENT_ERROR_FORBIDDEN'
+                    );
+                }
+
+                $order = Order::whereUserId($request->user_id)
+                    ->whereState('paid')
+                    ->whereJsonContains('products', [$id])
+                    ->first()
+                ;
+
+                if (!$order) {
+                    return $this->respondError(
+                        'product not purchased',
+                        'CLIENT_ERROR_FORBIDDEN'
+                    );
+                }
             }
         }
 
@@ -122,6 +161,7 @@ class ProductsController extends Controller
             'class' => $request->get('class'),
             'method' => $request->get('method'),
             'fileKey' => $fileKey,
+            'state' => 'under_review',
         ]);
 
         return $this->respondSuccess(
@@ -145,6 +185,29 @@ class ProductsController extends Controller
 
         $this->validateUpdate($request, $product);
 
+        if ('admin' !== $request->role) {
+            if ($product->user_id !== $request->user_id) {
+                return $this->respondError(
+                    'product is not owned by you',
+                    'CLIENT_ERROR_FORBIDDEN'
+                );
+            }
+
+            if ('denied' === $product->state) {
+                return $this->respondError(
+                    'product can\'t be accessed while denied',
+                    'CLIENT_ERROR_FORBIDDEN'
+                );
+            }
+
+            if ($request->get('state')) {
+                return $this->respondError(
+                    'product state can\'t be updated by teachers',
+                    'CLIENT_ERROR_FORBIDDEN'
+                );
+            }
+        }
+
         $product->update([
             'name' => $request->get('name', $product->name),
             'img_url' => $request->get('img_url', $product->img_url),
@@ -152,7 +215,18 @@ class ProductsController extends Controller
             'subject' => $request->get('subject', $product->subject),
             'class' => $request->get('class', $product->class),
             'method' => $request->get('method', $product->method),
+            'state' => $request->get('state', $product->state),
         ]);
+
+        if ($request->get('state')) {
+            $product_owner = User::findOrFail($product->user_id);
+
+            Mail::to($product_owner->email)->send(new ProductStateUpdate(
+                $product_owner,
+                $product->state,
+                $request->get('reason')
+            ));
+        }
 
         $product->save();
 
@@ -166,13 +240,23 @@ class ProductsController extends Controller
     /**
      * Delete product.
      *
-     * @param int $id
+     * @param Request $request
+     * @param int     $id
      *
      * @return JsonResponse
      */
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
+        if ('admin' !== $request->role) {
+            if ($product->user_id !== $request->user_id) {
+                return $this->respondError(
+                    'product is not owned by you',
+                    'CLIENT_ERROR_FORBIDDEN'
+                );
+            }
+        }
 
         $s3 = app('aws')->createClient('s3');
         $s3->deleteObject([
