@@ -38,10 +38,8 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->get('account', 'AccountsController@show');
     $router->put('account', 'AccountsController@update');
     $router->delete('account', 'AccountsController@delete');
-    $router->get('account/products', [
-        'middleware' => 'authorization:teacher.admin',
-        'uses' => 'AccountsController@showProducts',
-    ]);
+    $router->get('account/products', 'AccountsController@showProducts');
+    $router->get('account/orders', 'AccountsController@showOrders');
     $router->get('account/sessions', 'AccountsController@showSessions');
     $router->delete('account/sessions', 'AccountsController@revokeSession');
 
@@ -49,28 +47,21 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->get('products', 'ProductsController@all');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
     $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
-    $router->group(['middleware' => 'authorization:teacher.admin'], function () use ($router) {
-        $router->post('products', 'ProductsController@create');
-        $router->put('products/{id:[0-9]+}', 'ProductsController@update');
-        $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
-    });
+    $router->post('products', 'ProductsController@create');
+    $router->put('products/{id:[0-9]+}', 'ProductsController@update');
+    $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');
 
     // Order
-    $router->group(['middleware' => 'authorization:student.teacher'], function () use ($router) {
-        $router->get('orders', 'OrderController@all');
-        $router->get('orders/{id:[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}}', 'OrderController@show');
-        $router->post('orders', 'OrderController@create');
-    });
+    $router->get('orders/{id:[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}}', 'OrderController@show');
+    $router->post('orders', 'OrderController@create');
 
     // Admin
-    $router->group(['middleware' => 'authorization:admin'], function () use ($router) {
-        $router->get('admin/users', 'AdminController@all');
-        $router->get('admin/users/{id:[0-9]+}', 'AdminController@show');
-        $router->put('admin/users/{id:[0-9]+}', 'AdminController@update');
-        $router->delete('admin/users/{id:[0-9]+}', 'AdminController@delete');
-
-        $router->get('admin/users/{id:[0-9]+}/products', 'AdminController@showProducts');
-        $router->get('admin/users/{id:[0-9]+}/sessions', 'AdminController@showSessions');
-        $router->delete('admin/users/{id:[0-9]+}/sessions', 'AdminController@revokeSession');
-    });
+    $router->get('admin/users', 'AdminController@all');
+    $router->get('admin/users/{id:[0-9]+}', 'AdminController@show');
+    $router->put('admin/users/{id:[0-9]+}', 'AdminController@update');
+    $router->delete('admin/users/{id:[0-9]+}', 'AdminController@delete');
+    $router->get('admin/users/{id:[0-9]+}/products', 'AdminController@showProducts');
+    $router->get('admin/users/{id:[0-9]+}/orders', 'AdminController@showOrders');
+    $router->get('admin/users/{id:[0-9]+}/sessions', 'AdminController@showSessions');
+    $router->delete('admin/users/{id:[0-9]+}/sessions', 'AdminController@revokeSession');
 });

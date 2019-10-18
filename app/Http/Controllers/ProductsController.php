@@ -16,6 +16,18 @@ class ProductsController extends Controller
     use ValidatesProductsRequests;
 
     /**
+     * Define authorization.
+     */
+    public function __construct()
+    {
+        $this->middleware('authorization:teacher.admin', ['only' => [
+            'create',
+            'update',
+            'delete',
+        ]]);
+    }
+
+    /**
      * Show all products.
      *
      * @param Request $request

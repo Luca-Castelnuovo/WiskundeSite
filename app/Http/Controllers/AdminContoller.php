@@ -16,6 +16,14 @@ class AdminController extends Controller
     use ValidatesAdminRequests;
 
     /**
+     * Define authorization.
+     */
+    public function __construct()
+    {
+        $this->middleware('authorization:admin');
+    }
+
+    /**
      * Show user.
      *
      * @return JsonResponse
@@ -138,6 +146,29 @@ class AdminController extends Controller
             '',
             'SUCCESS_OK',
             ['products' => $products->get()]
+        );
+    }
+
+    /**
+     * Show orders.
+     *
+     * @param Request $request
+     * @param int     $id
+     *
+     * @return JsonResponse
+     */
+    public function showOrders(Request $request, $id)
+    {
+        if ($this->checkID($request, $id)) {
+            return $this->checkID($request, $id);
+        }
+
+        $orders = User::findOrFail($id)->orders();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            ['orders' => $orders->get()]
         );
     }
 

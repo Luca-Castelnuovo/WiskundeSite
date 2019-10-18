@@ -19,21 +19,11 @@ class OrderController extends Controller
     use ValidatesOrderRequests;
 
     /**
-     * All orders.
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse
+     * Define authorization.
      */
-    public function all(Request $request)
+    public function __construct()
     {
-        $orders = Order::whereUserId($request->user_id)->get();
-
-        return $this->respondSuccess(
-            '',
-            'SUCCESS_OK',
-            ['orders' => $orders]
-        );
+        $this->middleware('authorization:student.teacher');
     }
 
     /**

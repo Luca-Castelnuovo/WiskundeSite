@@ -23,6 +23,10 @@ class AccountsController extends Controller
     public function __construct(Request $request)
     {
         $this->request = $request;
+
+        $this->middleware('authorization:teacher.admin', ['only' => [
+            'showProducts',
+        ]]);
     }
 
     /**
@@ -104,6 +108,22 @@ class AccountsController extends Controller
             '',
             'SUCCESS_OK',
             ['products' => $products->get()]
+        );
+    }
+
+    /**
+     * Show orders.
+     *
+     * @return JsonResponse
+     */
+    public function showOrders()
+    {
+        $orders = $this->user()->orders();
+
+        return $this->respondSuccess(
+            '',
+            'SUCCESS_OK',
+            ['products' => $orders->get()]
         );
     }
 
