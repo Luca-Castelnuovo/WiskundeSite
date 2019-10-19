@@ -11,6 +11,7 @@ use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
@@ -58,7 +59,7 @@ class Handler extends ExceptionHandler
             );
         }
 
-        if ($exception instanceof NotFoundHttpException) {
+        if ($exception instanceof NotFoundHttpException || $exception instanceof MethodNotAllowedHttpException) {
             return response()->json(
                 ['error' => 'endpoint not found'],
                 404

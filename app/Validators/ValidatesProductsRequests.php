@@ -31,10 +31,10 @@ trait ValidatesProductsRequests
      */
     protected function validateUpdate(Request $request, Product $product)
     {
+        $name_rule = 'sometimes|max:255|regex:/[a-zA-Z\h]+/|unique:products,name';
+
         if ($product->name === $request->input('name')) {
             $name_rule = 'sometimes|max:255|regex:/[a-zA-Z\h]+/';
-        } else {
-            $name_rule = 'sometimes|max:255|regex:/[a-zA-Z\h]+/|unique:products,name';
         }
 
         $this->validate($request, [
