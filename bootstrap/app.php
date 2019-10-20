@@ -36,12 +36,13 @@ $app->withEloquent();
 
 $app->configure('app');
 $app->configure('captcha');
+$app->configure('cloudconvert');
 $app->configure('CORS');
+$app->configure('insights');
 $app->configure('mail');
+$app->configure('mollie');
 $app->configure('services');
 $app->configure('tokens');
-$app->configure('insights');
-$app->configure('mollie');
 
 /*
 |--------------------------------------------------------------------------

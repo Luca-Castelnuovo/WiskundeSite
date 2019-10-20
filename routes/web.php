@@ -24,9 +24,12 @@ $router->group(['middleware' => 'ratelimit:60,60'], function () use ($router) {
     $router->post('auth/reset/request', 'AuthController@requestResetPassword');
     $router->post('auth/reset', 'AuthController@resetPassword');
 
-    // Order
-    $router->post('orders/webhook', [
+    // Webhooks
+    $router->post('webhooks/order', [
         'as' => 'mollie_webhook', 'uses' => 'OrderController@webhook',
+    ]);
+    $router->post('webhooks/product', [
+        'as' => 'cloudconvert_webhook', 'uses' => 'ProductsController@webhook',
     ]);
 });
 
@@ -47,7 +50,6 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->get('products', 'ProductsController@all');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
     $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
-    $router->post('products/format', 'ProductsController@format');
     $router->post('products', 'ProductsController@create');
     $router->put('products/{id:[0-9]+}', 'ProductsController@update');
     $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');

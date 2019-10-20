@@ -20,8 +20,7 @@ class JSONMiddleware
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
             $bypass_filter = [
-                'orders/webhook',
-                'products/format',
+                'webhooks/order',
             ];
 
             if (in_array($request->path(), $bypass_filter)) {
