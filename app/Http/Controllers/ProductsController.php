@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CloudConvertHelper;
 use App\Helpers\UtilsHelper;
 use App\Mail\ProductStateUpdateMail;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Validators\ValidatesProductsRequests;
+use finfo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -171,6 +173,18 @@ class ProductsController extends Controller
 
         $fileBase64 = $request->get('file');
         $fileDecoded = base64_decode($fileBase64);
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime_type = $finfo->buffer($fileDecoded);
+
+        if ('application/pdf' !== $mime_type) {
+            $fileDecoded = CloudConvertHelper::fileToPDF($fileDecoded, $mime_type);
+        }
+
+        // TODO: add file encrypt
+        // $fileDecoded = CloudConvertHelper::encryptPDF($fileDecoded);
+
+        dd('file_type_ok');
 
         $s3->putObject([
             'Bucket' => config('services.s3.bucket'),
