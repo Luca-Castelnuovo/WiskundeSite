@@ -47,6 +47,7 @@ $router->group(['middleware' => 'authentication'], function () use ($router) {
     $router->get('products', 'ProductsController@all');
     $router->get('products/{id:[0-9]+}', 'ProductsController@show');
     $router->get('products/{id:[0-9]+}/open', 'ProductsController@open');
+    $router->post('products/format', 'ProductsController@format');
     $router->post('products', 'ProductsController@create');
     $router->put('products/{id:[0-9]+}', 'ProductsController@update');
     $router->delete('products/{id:[0-9]+}', 'ProductsController@delete');

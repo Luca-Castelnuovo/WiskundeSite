@@ -19,7 +19,12 @@ class JSONMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
-            if ('orders/webhook' === $request->path()) {
+            $bypass_filter = [
+                'orders/webhook',
+                'products/format',
+            ];
+
+            if (in_array($request->path(), $bypass_filter)) {
                 return $next($request);
             }
 

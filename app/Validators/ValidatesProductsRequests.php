@@ -8,6 +8,18 @@ use Illuminate\Http\Request;
 trait ValidatesProductsRequests
 {
     /**
+     * Validate format file to pdf.
+     *
+     * @param Request $request
+     */
+    protected function validateFormat(Request $request)
+    {
+        $this->validate($request, [
+            'file' => 'required|file',
+        ]);
+    }
+
+    /**
      * Validate creation of new product.
      *
      * @param Request $request

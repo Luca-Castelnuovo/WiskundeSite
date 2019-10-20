@@ -111,7 +111,7 @@ class RatelimitMiddleware
             'X-RateLimit-Remaining' => $remainingAttempts,
         ];
 
-        if (!is_null($retryAfter)) {
+        if ($retryAfter) {
             $headers['Retry-After'] = $retryAfter;
         }
 
@@ -131,7 +131,7 @@ class RatelimitMiddleware
      */
     protected function calculateRemainingAttempts($key, $maxAttempts, $retryAfter = null)
     {
-        if (!is_null($retryAfter)) {
+        if ($retryAfter) {
             return 0;
         }
 
