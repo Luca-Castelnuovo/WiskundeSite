@@ -9,6 +9,6 @@ return [
 
     's3' => [
         'bucket' => env('AWS_BUCKET'),
-        'url_ttl' => 5, // 5 seconds
+        'url_ttl' => 5,
     ],
 ];

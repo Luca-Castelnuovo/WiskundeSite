@@ -102,7 +102,7 @@ class OrderController extends Controller
         ]);
 
         $priceString = number_format($price, 2, '.', '');
-        $description = config('mollie.order_prefix').'#'.time();
+        $description = config('mollie.order_prefix').time();
         $redirectURL = config('mollie.redirect_url').$order->id;
         $webhookURL = config('mollie.webhook_url');
         $payment = Mollie::api()->payments()->create([
