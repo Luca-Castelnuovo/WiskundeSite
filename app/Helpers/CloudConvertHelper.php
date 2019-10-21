@@ -17,8 +17,12 @@ class CloudConvertHelper
     public static function fileToPDF($file_input, $mime_type)
     {
         $file_type = CloudConvertHelper::mime2ext($mime_type);
+        $process = CloudConvertHelper::process('convert', $file_type, $file_input);
 
-        return CloudConvertHelper::process('convert', $file_type, $file_input);
+        $file_output = file_get_contents($process->url);
+        dd($process, $file_output);
+
+        return CloudConvertHelper::download($process);
     }
 
     /**
@@ -45,7 +49,9 @@ class CloudConvertHelper
             ],
         ];
 
-        return CloudConvertHelper::process('protect', 'pdf', $file_input, $settings);
+        $process = CloudConvertHelper::process('protect', 'pdf', $file_input, $settings);
+
+        return CloudConvertHelper::download($process);
     }
 
     /**
@@ -55,32 +61,52 @@ class CloudConvertHelper
      * @param string     $inputFormat
      * @param string     $inputFile
      * @param null|array $additionalSettings
+     * @param mixed      $input_format
+     * @param mixed      $input_file
+     * @param mixed      $file_format
+     * @param mixed      $file_input
+     * @param null|mixed $additional_settings
      *
      * @return mixed
      */
-    protected static function process($mode, $inputFormat, $inputFile, $additionalSettings = null)
+    protected static function process($mode, $file_format, $file_input, $additional_settings = null)
     {
         $api_key = config('cloudconvert.api_key');
         $api = new Api($api_key);
 
         $process = $api->createProcess([
             'mode' => $mode,
-            'inputformat' => $inputFormat,
+            'inputformat' => $file_format,
             'outputformat' => 'pdf',
             'timeout' => config('cloudconvert.timeout'),
         ]);
 
         $settings = [
             'mode' => $mode,
-            'input' => 'upload',
-            'file' => $inputFile,
+            'inputformat' => $file_format,
+            'outputformat' => 'pdf',
+            'input' => 'raw',
+            'file' => $file_input,
+            'filename' => 'file.'.$file_format,
         ];
 
-        if ($additionalSettings) {
-            $settings = array_merge($settings, $additionalSettings);
+        if ($additional_settings) {
+            $settings = array_merge($settings, $additional_settings);
         }
 
-        return $process->start($settings)->wait()->download();
+        return $process->start($settings)->wait();
+    }
+
+    /**
+     * Download converted file into stram.
+     *
+     * @param mixed $process
+     *
+     * @return string
+     */
+    protected static function download($process)
+    {
+        return file_get_contents($process->url);
     }
 
     /**
