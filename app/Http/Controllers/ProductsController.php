@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Validators\ValidatesProductsRequests;
 use Exception;
+use finfo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
