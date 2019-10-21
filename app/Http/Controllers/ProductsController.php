@@ -9,7 +9,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Validators\ValidatesProductsRequests;
-use finfo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -142,20 +141,20 @@ class ProductsController extends Controller
             }
         }
 
-        $s3 = app('aws')->createClient('s3');
-        $cmd = $s3->getCommand('GetObject', [
+        $s3_client = app('aws')->createClient('s3');
+        $s3_cmd = $s3_client->getCommand('GetObject', [
             'Bucket' => config('services.s3.bucket'),
             'Key' => $product->fileKey,
         ]);
 
         $expires = time() + config('services.s3.url_ttl');
-        $request = $s3->createPresignedRequest($cmd, $expires);
-        $signedURL = (string) $request->getUri();
+        $s3_request = $s3_client->createPresignedRequest($s3_cmd, $expires);
+        $s3_signed_url = (string) $s3_request->getUri();
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['url' => $signedURL]
+            ['url' => $s3_signed_url]
         );
     }
 
@@ -168,28 +167,33 @@ class ProductsController extends Controller
     {
         $this->validateCreate($request);
 
-        $s3 = app('aws')->createClient('s3');
-        $fileKey = UtilsHelper::generateRandomToken().'.pdf';
+        $s3_client = app('aws')->createClient('s3');
+        $file_key = UtilsHelper::generateRandomToken().'.pdf';
 
-        $fileBase64 = $request->get('file');
-        $fileDecoded = base64_decode($fileBase64);
+        $file = $request->get('file');
+        $file_content = base64_decode($file);
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime_type = $finfo->buffer($fileDecoded);
+        $mime_type = $finfo->buffer($file_content);
 
         if ('application/pdf' !== $mime_type) {
-            $fileDecoded = CloudConvertHelper::fileToPDF($fileDecoded, $mime_type);
+            $file_content = CloudConvertHelper::fileToPDF($file_content, $mime_type);
         }
 
-        // TODO: add file encrypt
-        // $fileDecoded = CloudConvertHelper::encryptPDF($fileDecoded);
+        if (!$file_content) {
+            return $this->respondError(
+                'invalid file type',
+                'CLIENT_ERROR_BAD_REQUEST'
+            );
+        }
 
-        dd('file_type_ok');
+        // TODO: $file_content = CloudConvertHelper::encryptPDF($file_content);
+        dd($file_content);
 
-        $s3->putObject([
+        $s3_client->putObject([
             'Bucket' => config('services.s3.bucket'),
-            'Key' => $fileKey,
-            'Body' => $fileDecoded,
+            'Key' => $file_key,
+            'Body' => $file_content,
             'ContentType' => 'application/pdf',
         ]);
 
@@ -200,7 +204,7 @@ class ProductsController extends Controller
             'subject' => $request->get('subject'),
             'class' => $request->get('class'),
             'method' => $request->get('method'),
-            'fileKey' => $fileKey,
+            'fileKey' => $file_key,
             'state' => 'under_review',
         ]);
 
@@ -298,8 +302,8 @@ class ProductsController extends Controller
             }
         }
 
-        $s3 = app('aws')->createClient('s3');
-        $s3->deleteObject([
+        $s3_client = app('aws')->createClient('s3');
+        $s3_client->deleteObject([
             'Bucket' => config('services.s3.bucket'),
             'Key' => $product->fileKey,
         ]);

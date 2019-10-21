@@ -6,12 +6,6 @@ use CloudConvert\Api;
 
 class CloudConvertHelper
 {
-    public function __construct()
-    {
-        $api_key = config('cloudconvert.api_key');
-        $this->api = new Api($api_key);
-    }
-
     /**
      * Convert file to PDF.
      *
@@ -22,11 +16,9 @@ class CloudConvertHelper
      */
     public static function fileToPDF($file_input, $mime_type)
     {
-        $output = $this->process('convert', 'docx', $file_input);
+        $file_type = CloudConvertHelper::mime2ext($mime_type);
 
-        dd($output, $mime_type);
-
-        return $output;
+        return CloudConvertHelper::process('convert', $file_type, $file_input);
     }
 
     /**
@@ -53,11 +45,7 @@ class CloudConvertHelper
             ],
         ];
 
-        $output = $this->process('protect', 'pdf', $file_input, $settings);
-
-        dd($output);
-
-        return $output;
+        return CloudConvertHelper::process('protect', 'pdf', $file_input, $settings);
     }
 
     /**
@@ -70,9 +58,12 @@ class CloudConvertHelper
      *
      * @return mixed
      */
-    protected function process($mode, $inputFormat, $inputFile, $additionalSettings = null)
+    protected static function process($mode, $inputFormat, $inputFile, $additionalSettings = null)
     {
-        $process = $this->api->createProcess([
+        $api_key = config('cloudconvert.api_key');
+        $api = new Api($api_key);
+
+        $process = $api->createProcess([
             'mode' => $mode,
             'inputformat' => $inputFormat,
             'outputformat' => 'pdf',
@@ -90,5 +81,48 @@ class CloudConvertHelper
         }
 
         return $process->start($settings)->wait()->download();
+    }
+
+    /**
+     * Mime type to extension.
+     *
+     * @param string $mime
+     *
+     * @return string
+     */
+    protected static function mime2ext($mime)
+    {
+        $mime_map = [
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+            'image/jpeg' => 'jpeg',
+            'image/pjpeg' => 'jpeg',
+            'application/pdf' => 'pdf',
+            'application/octet-stream' => 'pdf',
+            'image/png' => 'png',
+            'image/x-png' => 'png',
+            'application/powerpoint' => 'ppt',
+            'application/vnd.ms-powerpoint' => 'ppt',
+            'application/vnd.ms-office' => 'ppt',
+            'application/msword' => 'doc',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
+            'application/x-photoshop' => 'psd',
+            'image/vnd.adobe.photoshop' => 'psd',
+            'text/rtf' => 'rtf',
+            'image/svg+xml' => 'svg',
+            'image/tiff' => 'tiff',
+            'text/plain' => 'txt',
+            'application/excel' => 'xl',
+            'application/msexcel' => 'xls',
+            'application/x-msexcel' => 'xls',
+            'application/x-ms-excel' => 'xls',
+            'application/x-excel' => 'xls',
+            'application/x-dos_ms_excel' => 'xls',
+            'application/xls' => 'xls',
+            'application/x-xls' => 'xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
+            'application/vnd.ms-excel' => 'xlsx',
+        ];
+
+        return true === isset($mime_map[$mime]) ? $mime_map[$mime] : false;
     }
 }
