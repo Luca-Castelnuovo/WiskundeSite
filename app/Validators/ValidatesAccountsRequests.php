@@ -15,10 +15,10 @@ trait ValidatesAccountsRequests
      */
     protected function validateUpdate(Request $request, User $user)
     {
+        $email_rule = 'sometimes|max:255|email|unique:users,email';
+
         if ($user->email === $request->input('email')) {
             $email_rule = 'sometimes|max:255|email';
-        } else {
-            $email_rule = 'sometimes|max:255|email|unique:users,email';
         }
 
         $this->validate($request, [
