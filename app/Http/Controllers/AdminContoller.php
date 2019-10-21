@@ -32,6 +32,8 @@ class AdminController extends Controller
     {
         $users = User::all();
 
+        // TODO: add current flag
+
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',

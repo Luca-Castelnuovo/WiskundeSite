@@ -134,17 +134,20 @@ class AccountsController extends Controller
      */
     public function showSessions()
     {
-        $refresh_tokens = $this->user()->sessions();
+        $sessions = $this->user()->sessions();
+
+        // TODO: add current flag
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['sessions' => $refresh_tokens->get()]
+            ['sessions' => $sessions->get()]
         );
     }
 
     /**
-     * Revoke an session.
+     * Revoke an session
+     * Can't be current session.
      *
      * @param Request $request
      *
@@ -154,24 +157,17 @@ class AccountsController extends Controller
     {
         $this->validateRevoke($request);
 
-        $revokable_session_uuid = $request->get('session_uuid');
-        $revokable_session = Session::findOrFail($revokable_session_uuid);
+        $session_uuid = $request->get('session_uuid');
 
-        if ($revokable_session_uuid === $request->session_uuid) {
+        if ($session_uuid === $request->session_uuid) {
             return $this->respondError(
                 'can\'t revoke current session',
                 'CLIENT_ERROR_BAD_REQUEST'
             );
         }
 
-        if ($revokable_session->user_id !== $request->user_id) {
-            return $this->respondError(
-                'session not found',
-                'CLIENT_ERROR_BAD_REQUEST'
-            );
-        }
-
-        $revokable_session->delete();
+        $session = Session::whereId($session_uuid)->whereUserId($request->user_id)->firstOrFail();
+        $session->delete();
 
         return $this->respondSuccess(
             'session revoked',

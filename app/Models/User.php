@@ -43,7 +43,7 @@ class User extends Model
     ];
 
     /**
-     * Get all the refresh_tokens by the user.
+     * Get all the sessions by the user.
      */
     public function sessions()
     {
