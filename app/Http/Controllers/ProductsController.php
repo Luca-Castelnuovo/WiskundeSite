@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\CloudConvertHelper;
+use App\Helpers\GateHelper;
 use App\Helpers\UtilsHelper;
 use App\Mail\ProductStateUpdateMail;
-use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Validators\ValidatesProductsRequests;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -39,19 +40,16 @@ class ProductsController extends Controller
     {
         $products = Product::all();
 
-        switch ($request->role) {
-            case 'student':
-                $products = $products->filter(function ($product) {
-                    return 'accepted' === $product->state;
-                });
+        if ('student' === $request->role) {
+            $products = $products->filter(function ($product) {
+                return 'accepted' === $product->state;
+            });
+        }
 
-                break;
-            case 'teacher':
-                $products = $products->filter(function ($product) use ($request) {
-                    return 'accepted' === $product->state || $request->user_id === $product->user_id;
-                });
-
-                break;
+        if ('teacher' === $request->role) {
+            $products = $products->filter(function ($product) use ($request) {
+                return 'accepted' === $product->state || $request->user_id === $product->user_id;
+            });
         }
 
         return $this->respondSuccess(
@@ -73,22 +71,16 @@ class ProductsController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        if ('admin' !== $request->role && $product->user_id !== $request->user_id) {
-            if ('accepted' !== $product->state) {
-                return $this->respondError(
-                    'product can\'t be accessed while '.$product->state,
-                    'CLIENT_ERROR_FORBIDDEN'
-                );
-            }
+        try {
+            GateHelper::product_show($request, $product);
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_FORBIDDEN'
+            );
         }
 
-        $order = Order::whereUserId($request->user_id)
-            ->whereState('paid')
-            ->whereJsonContains('products', [(int) $id])
-            ->first()
-        ;
-
-        $product->owned_by_user = (bool) $order;
+        $product->owned_by_user = UtilsHelper::productOwnedByUser($request->user_id, $product);
 
         return $this->respondSuccess(
             '',
@@ -110,35 +102,13 @@ class ProductsController extends Controller
         $id = (int) $id;
         $product = Product::findOrFail($id);
 
-        if ('admin' !== $request->role) {
-            if ('denied' === $product->state) {
-                return $this->respondError(
-                    'product can\'t be accessed while denied',
-                    'CLIENT_ERROR_FORBIDDEN'
-                );
-            }
-
-            if ($product->user_id !== $request->user_id) {
-                if ('under_review' === $product->state) {
-                    return $this->respondError(
-                        'product can\'t be accessed while under review',
-                        'CLIENT_ERROR_FORBIDDEN'
-                    );
-                }
-
-                $order = Order::whereUserId($request->user_id)
-                    ->whereState('paid')
-                    ->whereJsonContains('products', [$id])
-                    ->first()
-                ;
-
-                if (!$order) {
-                    return $this->respondError(
-                        'product not purchased',
-                        'CLIENT_ERROR_FORBIDDEN'
-                    );
-                }
-            }
+        try {
+            GateHelper::product_open($request, $product);
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_FORBIDDEN'
+            );
         }
 
         $s3_client = app('aws')->createClient('s3');
@@ -229,27 +199,13 @@ class ProductsController extends Controller
 
         $this->validateUpdate($request, $product);
 
-        if ('admin' !== $request->role) {
-            if ($product->user_id !== $request->user_id) {
-                return $this->respondError(
-                    'product is not owned by you',
-                    'CLIENT_ERROR_FORBIDDEN'
-                );
-            }
-
-            if ('denied' === $product->state) {
-                return $this->respondError(
-                    'product can\'t be accessed while denied',
-                    'CLIENT_ERROR_FORBIDDEN'
-                );
-            }
-
-            if ($request->get('state')) {
-                return $this->respondError(
-                    'product state can\'t be updated by teachers',
-                    'CLIENT_ERROR_FORBIDDEN'
-                );
-            }
+        try {
+            GateHelper::product_update($request, $product);
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_FORBIDDEN'
+            );
         }
 
         $product->update([
@@ -293,13 +249,13 @@ class ProductsController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        if ('admin' !== $request->role) {
-            if ($product->user_id !== $request->user_id) {
-                return $this->respondError(
-                    'product is not owned by you',
-                    'CLIENT_ERROR_FORBIDDEN'
-                );
-            }
+        try {
+            GateHelper::product_delete($request, $product);
+        } catch (Exception $error) {
+            return $this->respondError(
+                $error->getMessage(),
+                'CLIENT_ERROR_FORBIDDEN'
+            );
         }
 
         $s3_client = app('aws')->createClient('s3');

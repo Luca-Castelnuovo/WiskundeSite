@@ -130,18 +130,24 @@ class AccountsController extends Controller
     /**
      * Show sessions.
      *
+     * @param Request $request
+     *
      * @return JsonResponse
      */
-    public function showSessions()
+    public function showSessions(Request $request)
     {
-        $sessions = $this->user()->sessions();
+        $sessions = $this->user()->sessions()->get();
 
-        // TODO: add current flag
+        $sessions = $sessions->map(function ($session) use ($request) {
+            $session->current = $session->id === $request->session_uuid;
+
+            return $session;
+        });
 
         return $this->respondSuccess(
             '',
             'SUCCESS_OK',
-            ['sessions' => $sessions->get()]
+            ['sessions' => $sessions]
         );
     }
 

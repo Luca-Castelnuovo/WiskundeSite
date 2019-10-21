@@ -36,14 +36,7 @@ class OrderController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
-
-        if ($order->user_id !== $request->user_id) {
-            return $this->respondError(
-                'model not found',
-                'CLIENT_ERROR_NOT_FOUND'
-            );
-        }
+        $order = Order::whereId($id)->whereUserId($request->user_id)->firstOrFail();
 
         return $this->respondSuccess(
             '',
@@ -78,16 +71,13 @@ class OrderController extends Controller
         }
 
         foreach ($products as $product) {
-            $order = Order::whereUserId($request->user_id)
-                ->whereState('paid')
-                ->whereJsonContains('products', [$product->id])
-                ->first()
-            ;
-
-            if ($order) {
+            if (UtilsHelper::productOwnedByUser($request->user_id, $product)) {
                 return $this->respondError(
-                    'user already owns items in cart',
-                    'CLIENT_ERROR_BAD_REQUEST'
+                    'user already owns item',
+                    'CLIENT_ERROR_BAD_REQUEST',
+                    [
+                        'owned_item' => $product->id,
+                    ]
                 );
             }
         }

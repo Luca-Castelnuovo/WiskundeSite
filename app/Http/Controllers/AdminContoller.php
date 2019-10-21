@@ -26,13 +26,19 @@ class AdminController extends Controller
     /**
      * Show user.
      *
+     * @param Request $request
+     *
      * @return JsonResponse
      */
-    public function all()
+    public function all(Request $request)
     {
         $users = User::all();
 
-        // TODO: add current flag
+        $users = $users->map(function ($user) use ($request) {
+            $user->current = $user->id === $request->user_id;
+
+            return $user;
+        });
 
         return $this->respondSuccess(
             '',
@@ -208,19 +214,14 @@ class AdminController extends Controller
     public function revokeSession(Request $request, $id)
     {
         $this->validateRevoke($request);
+
         if ($this->checkID($request, $id)) {
             return $this->checkID($request, $id);
         }
 
-        $session = Session::findOrFail($request->get('session_uuid'))->whereUserId($id)->first();
+        $session_uuid = $request->get('session_uuid');
 
-        if (!$session) {
-            return $this->respondError(
-                'model not found',
-                'CLIENT_ERROR_NOT_FOUND'
-            );
-        }
-
+        $session = Session::whereId($session_uuid)->whereUserId($id)->firstOrFail();
         $session->delete();
 
         return $this->respondSuccess(
