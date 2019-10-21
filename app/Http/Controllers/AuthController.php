@@ -44,7 +44,7 @@ class AuthController extends Controller
         }
 
         if ($user->verify_email_token) {
-            $verify_mail_token_JWT = $this->generateJWT(
+            $verify_mail_JWT = $this->generateJWT(
                 'verify_email',
                 $user->id,
                 $user->verify_email_token
@@ -52,7 +52,7 @@ class AuthController extends Controller
 
             Mail::to($user->email)->send(new RegisterConfirmationMail(
                 $user,
-                $verify_mail_token_JWT
+                $verify_mail_JWT
             ));
 
             return $this->respondError(
@@ -210,7 +210,7 @@ class AuthController extends Controller
         }
 
         $verify_mail_token = UtilsHelper::generateRandomToken();
-        $verify_mail_token_JWT = $this->generateJWT(
+        $verify_mail_JWT = $this->generateJWT(
             'verify_email',
             $user->id,
             $verify_mail_token
@@ -221,7 +221,7 @@ class AuthController extends Controller
 
         Mail::to($user->email)->send(new RegisterConfirmationMail(
             $user,
-            $verify_mail_token_JWT
+            $verify_mail_JWT
         ));
 
         return $this->respondSuccess(
@@ -261,7 +261,7 @@ class AuthController extends Controller
         }
 
         $reset_password_token = UtilsHelper::generateRandomToken();
-        $reset_password_token_JWT = JWTHelper::create(
+        $reset_password_JWT = JWTHelper::create(
             'reset_password',
             config('tokens.reset_password_token.ttl'),
             [
@@ -275,7 +275,7 @@ class AuthController extends Controller
 
         Mail::to($user->email)->send(new RequestResetPasswordMail(
             $user,
-            $reset_password_token_JWT
+            $reset_password_JWT
         ));
 
         return $this->respondSuccess(
