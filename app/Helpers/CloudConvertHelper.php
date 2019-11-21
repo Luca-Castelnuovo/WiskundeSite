@@ -19,6 +19,7 @@ class CloudConvertHelper
         $file_type = CloudConvertHelper::mime2ext($mime_type);
         $process = CloudConvertHelper::process('convert', $file_type, $file_input);
 
+        // TODO: move this to download function
         $file_output = file_get_contents($process->url);
         dd($process, $file_output);
 

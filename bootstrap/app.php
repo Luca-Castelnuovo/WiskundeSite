@@ -91,6 +91,7 @@ $app->singleton(
 
 $app->middleware([
     App\Http\Middleware\CORSMiddleware::class,
+    App\Http\Middleware\PreflightMiddleware::class,
     App\Http\Middleware\JSONMiddleware::class,
 ]);
 
