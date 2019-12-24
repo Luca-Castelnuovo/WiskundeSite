@@ -11,7 +11,7 @@
         "php": "^7.2",
         "aws/aws-sdk-php": "^3.93",
         "aws/aws-sdk-php-laravel": "^3.4",
-        "cloudconvert/cloudconvert-php": "^2.2",
+        "cloudconvert/cloudconvert-php": "^3.0",
         "firebase/php-jwt": "^5.0",
         "guzzlehttp/guzzle": "^6.3",
         "illuminate/mail": "^6.1",
