@@ -1834,7 +1834,7 @@
         },
         {
             "name": "illuminate/translation",
-            "version": "v6.14.0",
+            "version": "v6.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/translation.git",
@@ -1880,7 +1880,7 @@
         },
         {
             "name": "illuminate/validation",
-            "version": "v6.14.0",
+            "version": "v6.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/validation.git",
