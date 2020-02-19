@@ -1326,7 +1326,7 @@
         },
         {
             "name": "illuminate/filesystem",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/filesystem.git",
@@ -1722,7 +1722,7 @@
         },
         {
             "name": "illuminate/session",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/session.git",
