@@ -1880,7 +1880,7 @@
         },
         {
             "name": "illuminate/validation",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/validation.git",
