@@ -1086,7 +1086,7 @@
         },
         {
             "name": "illuminate/container",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/container.git",
@@ -1130,7 +1130,7 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -1517,16 +1517,16 @@
         },
         {
             "name": "illuminate/mail",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/mail.git",
-                "reference": "6f55cb8f2e753303c1a0d4d0e7bbf89aa7ce75c6"
+                "reference": "ed0a1382ab76149410c6a36906527b9bff14f8ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/mail/zipball/6f55cb8f2e753303c1a0d4d0e7bbf89aa7ce75c6",
-                "reference": "6f55cb8f2e753303c1a0d4d0e7bbf89aa7ce75c6",
+                "url": "https://api.github.com/repos/illuminate/mail/zipball/ed0a1382ab76149410c6a36906527b9bff14f8ce",
+                "reference": "ed0a1382ab76149410c6a36906527b9bff14f8ce",
                 "shasum": ""
             },
             "require": {
@@ -1542,7 +1542,7 @@
             },
             "suggest": {
                 "aws/aws-sdk-php": "Required to use the SES mail driver (^3.0).",
-                "guzzlehttp/guzzle": "Required to use the Mailgun mail driver (^6.0).",
+                "guzzlehttp/guzzle": "Required to use the Mailgun mail driver (^6.0|^7.0).",
                 "wildbit/swiftmailer-postmark": "Required to use Postmark mail driver (^3.0)."
             },
             "type": "library",
@@ -1568,7 +1568,7 @@
             ],
             "description": "The Illuminate Mail package.",
             "homepage": "https://laravel.com",
-            "time": "2020-02-10T02:13:27+00:00"
+            "time": "2020-02-15T15:36:39+00:00"
         },
         {
             "name": "illuminate/pagination",
@@ -1773,16 +1773,16 @@
         },
         {
             "name": "illuminate/support",
-            "version": "v6.15.1",
+            "version": "v6.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
-                "reference": "38ea484c5594cd33c677782bc205536a284a8918"
+                "reference": "2f5f449750e6821f2d8c4e993a4ff77c7d7d5cc8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/support/zipball/38ea484c5594cd33c677782bc205536a284a8918",
-                "reference": "38ea484c5594cd33c677782bc205536a284a8918",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/2f5f449750e6821f2d8c4e993a4ff77c7d7d5cc8",
+                "reference": "2f5f449750e6821f2d8c4e993a4ff77c7d7d5cc8",
                 "shasum": ""
             },
             "require": {
@@ -1830,7 +1830,7 @@
             ],
             "description": "The Illuminate Support package.",
             "homepage": "https://laravel.com",
-            "time": "2020-02-11T22:42:15+00:00"
+            "time": "2020-02-14T14:20:14+00:00"
         },
         {
             "name": "illuminate/translation",
