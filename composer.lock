@@ -2234,16 +2234,16 @@
         },
         {
             "name": "mollie/mollie-api-php",
-            "version": "v2.16.0",
+            "version": "v2.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mollie/mollie-api-php.git",
-                "reference": "57b478ee09e636e45255512d0cf28236ea9284e5"
+                "reference": "ee22d0301aee55a41ef2e7d201ef29f86550d1f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/57b478ee09e636e45255512d0cf28236ea9284e5",
-                "reference": "57b478ee09e636e45255512d0cf28236ea9284e5",
+                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/ee22d0301aee55a41ef2e7d201ef29f86550d1f7",
+                "reference": "ee22d0301aee55a41ef2e7d201ef29f86550d1f7",
                 "shasum": ""
             },
             "require": {
@@ -2316,7 +2316,7 @@
                 "sofortbanking",
                 "subscriptions"
             ],
-            "time": "2020-02-04T10:48:39+00:00"
+            "time": "2020-02-25T12:19:37+00:00"
         },
         {
             "name": "monolog/monolog",
